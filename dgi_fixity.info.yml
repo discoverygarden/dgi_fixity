@@ -1,0 +1,9 @@
+name: 'DGI Fixity'
+description: "Performs fixity checks on original media."
+type: module
+package: DGI
+core_version_requirement: ^8 || ^9
+dependencies:
+  - drupal:node
+  - drupal:media
+  - filehash:filehash
