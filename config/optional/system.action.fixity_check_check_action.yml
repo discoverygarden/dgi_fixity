@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - dgi_fixity
+id: fixity_check_check_action
+label: 'Perform check'
+type: fixity_check
+plugin: dgi_fixity:check_action:fixity_check
+configuration: {  }

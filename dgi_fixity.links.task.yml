@@ -1,0 +1,45 @@
+dgi_fixity.entities:
+  class: \Drupal\Core\Menu\LocalTaskDefault
+  deriver: 'Drupal\dgi_fixity\Plugin\Derivative\FixityCheckLocalTasks'
+
+dgi_fixity.config:
+  route_name: dgi_fixity.settings
+  base_route: dgi_fixity.settings
+  title: Configuration
+
+dgi_fixity.batch:
+  route_name: dgi_fixity.batch
+  base_route: dgi_fixity.settings
+  title: Check
+
+dgi_fixity.generate:
+  route_name: dgi_fixity.generate
+  base_route: dgi_fixity.settings
+  title: Generate
+  
+entity.fixity_check.view:
+  route_name: entity.fixity_check.canonical
+  base_route: entity.fixity_check.canonical
+  title: View
+
+entity.fixity_check.edit:
+  route_name: entity.fixity_check.edit_form
+  base_route: entity.fixity_check.canonical
+  title: Edit
+
+entity.fixity_check.delete_form:
+  route_name: entity.fixity_check.delete_form
+  base_route: entity.fixity_check.canonical
+  weight: 10
+  title: Delete
+
+entity.fixity_check.revision:
+  route_name: entity.fixity_check.revision
+  base_route: entity.fixity_check.revision
+  title: Revision
+
+entity.fixity_check.revision.delete_form:
+  route_name: entity.fixity_check.revision_delete_confirm
+  base_route: entity.fixity_check.revision
+  weight: 10
+  title: Delete

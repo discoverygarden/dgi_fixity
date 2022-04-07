@@ -1,0 +1,52 @@
+dgi_fixity.settings:
+  path: '/admin/config/fixity'
+  defaults:
+    _form: '\Drupal\dgi_fixity\Form\SettingsForm'
+    _title: 'Fixity'
+  requirements:
+    _permission: 'access administration pages,administer fixity checks'
+
+dgi_fixity.batch:
+  path: '/admin/config/fixity/check'
+  defaults:
+    _form: '\Drupal\dgi_fixity\Form\BatchForm'
+    _title: 'Check'
+  requirements:
+    _permission: 'access administration pages,administer fixity checks'
+
+dgi_fixity.generate:
+  path: '/admin/config/fixity/generate'
+  defaults:
+    _form: '\Drupal\dgi_fixity\Form\GenerateForm'
+    _title: 'Generate'
+  requirements:
+    _permission: 'access administration pages,administer fixity checks'
+
+entity.fixity_check.revision:
+  path: '/fixity/{fixity_check}/revisions/{fixity_check_revision}'
+  defaults:
+    _controller: '\Drupal\Core\Entity\Controller\EntityViewController::viewRevision'
+    _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
+  requirements:
+    _permission: 'view fixity checks'
+    fixity_check: \d+
+    fixity_check_revision: \d+
+  options:
+    _admin_route: TRUE
+    parameters:
+      fixity_check:
+        type: entity:fixity_check
+      fixity_check_revision:
+        type: entity_revision:fixity_check
+
+entity.fixity_check.revision_delete_confirm:
+  path: '/fixity/{fixity_check}/revisions/{fixity_check_revision}/delete'
+  defaults:
+    _form: '\Drupal\dgi_fixity\Form\RevisionDeleteForm'
+    _title: 'Delete earlier check'
+  requirements:
+    _permission: 'administer fixity checks'
+    fixity_check: \d+
+    fixity_check_revision: \d+
+  options:
+    _admin_route: TRUE

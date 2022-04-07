@@ -1,0 +1,11 @@
+dgi_fixity.settings:
+  title: 'Fixity'
+  description: 'Configure Fixity Settings.'
+  route_name: dgi_fixity.settings
+  parent: 'system.admin_config_media'
+
+dgi_fixity.report:
+  title: 'Fixity report'
+  description: 'Report of all fixity checks.'
+  route_name: entity.fixity_check.collection
+  parent: 'system.admin_reports'

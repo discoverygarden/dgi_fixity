@@ -1,0 +1,7 @@
+sources:
+  'fixity_check_source:all_files': 'fixity_check_source:all_files'
+threshold: '-1 month'
+batch_size: 100
+notify_user: 1
+notify_user_threshold: '-1 week'
+notify_status: 2
