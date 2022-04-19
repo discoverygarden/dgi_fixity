@@ -125,10 +125,12 @@ interface FixityCheckServiceInterface {
    *
    * @param array $stats
    *   The stats as returned by this service.
+   * @param array $options
+   *   An associative array of additional options for the TranslatableMarkup.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
    *   A list of messages that describe the current state of the system.
    */
-  public function summary(array $stats): array;
+  public function summary(array $stats, array $options = []): array;
 
 }

@@ -78,13 +78,15 @@ function dgi_fixity_mail($key, &$message, $params) {
         return;
       }
 
+      $options = ['langcode' => $message['langcode']];
       $now = \Drupal::time()->getRequestTime();
-      $subject = \t('Fixity Check Report - @now', ['@now' => date(DATE_RFC7231, $now)])->render();
-      $body = $fixity->summary($stats);
+      $subject = \t('Fixity Check Report - @now', ['@now' => date(DATE_RFC7231, $now)], $options)->render();
+      $body = $fixity->summary($stats, $options);
       if ($stats['failed'] !== 0) {
         $body[] = \t(
           'There are failed checks which require your attention please review the current state of checks <a href="@site">here</a>.',
-          ['@site' => Url::fromRoute('entity.fixity_check.collection', [], ['absolute' => TRUE])->toString()]
+          ['@site' => Url::fromRoute('entity.fixity_check.collection', [], ['absolute' => TRUE])->toString()],
+          $options
         )->render();
       }
 
@@ -130,7 +132,7 @@ function dgi_fixity_cron() {
   $uid = $settings->get(SettingsForm::NOTIFY_USER);
   $user = User::load($uid);
   if ($user) {
-    \Drupal::service('plugin.manager.mail')->mail('dgi_fixity', 'notify', $user->getEmail(), $user->getPreferredAdminLangcode(TRUE));
+    \Drupal::service('plugin.manager.mail')->mail('dgi_fixity', 'notify', $user->getEmail(), $user->getPreferredLangcode(TRUE));
   }
 }
 

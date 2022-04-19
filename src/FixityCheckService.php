@@ -346,28 +346,36 @@ class FixityCheckService implements FixityCheckServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function summary(array $stats): array {
+  public function summary(array $stats, array $options = []): array {
     $summary = [];
     $summary[] = $this->formatPlural(
       $stats['revisions'],
       '@count check has been performed since tracking started.',
       '@count checks have been performed since tracking started.',
+      [],
+      $options
     );
     $summary[] = $this->formatPlural(
       $stats['periodic']['total'],
       '@count file is set to be checked periodically.',
       '@count files are set to be checked periodically.',
+      [],
+      $options
     );
     $summary[] = $this->formatPlural(
       $stats['periodic']['current'],
       '@count periodic check is up to date.',
       '@count periodic checks are up to date.',
+      [],
+      $options
     );
     if ($stats['periodic']['expired'] > 0) {
       $summary[] = $this->formatPlural(
         $stats['periodic']['expired'],
         '@count periodic check is out to date.',
         '@count periodic checks are out to date.',
+        [],
+        $options
       );
     }
     if ($stats['failed'] > 0) {
@@ -375,12 +383,16 @@ class FixityCheckService implements FixityCheckServiceInterface {
         $stats['failed'],
         '@count check has failed.',
         '@count checks have failed.',
+        [],
+        $options
       );
       foreach ($stats['states'] as $state => $count) {
         $summary[] = $this->formatPlural(
           $count,
           FixityCheck::getStateProperty($state, 'singular'),
           FixityCheck::getStateProperty($state, 'plural'),
+          [],
+          $options
         );
       }
     }
