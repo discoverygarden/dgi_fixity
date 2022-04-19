@@ -4,7 +4,6 @@ namespace Drupal\dgi_fixity;
 
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\dgi_fixity\Form\SettingsForm;
 
 /**
@@ -38,9 +37,9 @@ class FixityCheckBatchCheck {
   protected static function buildFixed(array $fids, bool $force, int $batch_size) {
     $builder = new BatchBuilder();
     return $builder
-      ->setTitle(new TranslatableMarkup('Performing checks on @count file(s)', ['@count' => count($fids)]))
-      ->setInitMessage(new TranslatableMarkup('Starting'))
-      ->setErrorMessage(new TranslatableMarkup('Batch has encountered an error'))
+      ->setTitle(\t('Performing checks on @count file(s)', ['@count' => count($fids)]))
+      ->setInitMessage(\t('Starting'))
+      ->setErrorMessage(\t('Batch has encountered an error'))
       ->addOperation([static::class, 'processFixedList'], [
         $fids,
         $force,
@@ -66,9 +65,9 @@ class FixityCheckBatchCheck {
       );
     }
     return $builder
-      ->setTitle(new TranslatableMarkup('Enumerating periodic checks from @count Source(s)', ['@count' => count($sources)]))
-      ->setInitMessage(new TranslatableMarkup('Starting'))
-      ->setErrorMessage(new TranslatableMarkup('Batch has encountered an error'))
+      ->setTitle(\t('Enumerating periodic checks from @count Source(s)', ['@count' => count($sources)]))
+      ->setInitMessage(\t('Starting'))
+      ->setErrorMessage(\t('Batch has encountered an error'))
       ->addOperation([static::class, 'processPeriodic'], [$force, $batch_size])
       ->setFinishCallback([static::class, 'finished'])
       ->toArray();
@@ -101,7 +100,7 @@ class FixityCheckBatchCheck {
     }
     $chunk = array_slice($fids, $sandbox['offset'], $batch_size);
     $end = min($sandbox['total'], $sandbox['offset'] + count($chunk));
-    $context['message'] = new TranslatableMarkup('Processing @start to @end of @total', [
+    $context['message'] = \t('Processing @start to @end of @total', [
       '@start' => $sandbox['offset'],
       '@end' => $end,
       '@total' => $sandbox['total'],
@@ -139,7 +138,7 @@ class FixityCheckBatchCheck {
         $check->save();
       }
       catch (\Exception $e) {
-        $results['errors'][] = new TranslatableMarkup('Encountered an exception: @exception', [
+        $results['errors'][] = \t('Encountered an exception: @exception', [
           '@exception' => $e,
         ]);
         // In practice exceptions in this case shouldn't arise, but if they do
@@ -181,7 +180,7 @@ class FixityCheckBatchCheck {
 
     $files = $storage->getPeriodic($sandbox['offset'], $batch_size);
     $end = min($sandbox['total'], $sandbox['offset'] + count($files));
-    $context['message'] = new TranslatableMarkup('Processing @start to @end', [
+    $context['message'] = \t('Processing @start to @end', [
       '@start' => $sandbox['offset'],
       '@end' => $end,
     ]);
@@ -229,7 +228,7 @@ class FixityCheckBatchCheck {
       }
       catch (\Exception $e) {
         $results['failed']++;
-        $results['errors'][] = new TranslatableMarkup('Encountered an exception: @exception', [
+        $results['errors'][] = \t('Encountered an exception: @exception', [
           '@exception' => $e,
         ]);
       }
@@ -268,7 +267,7 @@ class FixityCheckBatchCheck {
       '@count was skipped.',
       '@count were skipped.',
     ));
-    $messenger->addStatus(new TranslatableMarkup(
+    $messenger->addStatus(\t(
       '@count failed.', ['@count' => $results['failed']]
     ));
     $error_count = count($results['errors']);

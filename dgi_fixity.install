@@ -5,8 +5,6 @@
  * Install hook implementations.
  */
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
 /**
  * Implements hook_requirements().
  */
@@ -26,8 +24,8 @@ function dgi_fixity_requirements($phase) {
     $failed = $stats['failed'] > 0;
     $out_to_date = $stats['periodic']['expired'] > 0;
     $requirements['dgi_fixity'] = [
-      'title' => new TranslatableMarkup('Fixity'),
-      'value' => $failed ? new TranslatableMarkup('Error') : ($out_to_date ? new TranslatableMarkup('Out of date') : new TranslatableMarkup('Up to date')),
+      'title' => \t('Fixity'),
+      'value' => $failed ? \t('Error') : ($out_to_date ? \t('Out of date') : \t('Up to date')),
       'description' => \Drupal::service('renderer')->render($elements),
       'severity' => $failed ? REQUIREMENT_ERROR : ($out_to_date ? REQUIREMENT_WARNING : REQUIREMENT_OK),
     ];

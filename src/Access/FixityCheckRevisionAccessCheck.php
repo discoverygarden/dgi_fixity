@@ -56,13 +56,13 @@ class FixityCheckRevisionAccessCheck implements AccessInterface {
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The currently logged in account.
    * @param int $fixity_check_revision
-   *   (optional) The fixity_check revision ID. If not specified, but 
+   *   (optional) The fixity_check revision ID. If not specified, but
    *   $fixity_check is, access is checked for that object's revision.
    * @param \Drupal\dgi_fixity\FixityCheckInterface $fixity_check
-   *   (optional) A fixity_check object. Used for checking access to a 
+   *   (optional) A fixity_check object. Used for checking access to a
    *   fixity_check's default revision when $fixity_check_revision is
-   *   unspecified. Ignored when $fixity_check_revision is specified. 
-   *   If neither $fixity_check_revision nor $fixity_check are specified, 
+   *   unspecified. Ignored when $fixity_check_revision is specified.
+   *   If neither $fixity_check_revision nor $fixity_check are specified,
    *   then access is denied.
    *
    * @return \Drupal\Core\Access\AccessResultInterface
@@ -97,8 +97,8 @@ class FixityCheckRevisionAccessCheck implements AccessInterface {
     ];
 
     if (!$fixity_check || !isset($map[$op])) {
-      // If there was no fixity_check to check against, or the $op was not one of the
-      // supported ones, we return access denied.
+      // If there was no fixity_check to check against, or the $op was not one
+      // of the supported ones, we return access denied.
       return FALSE;
     }
 
@@ -122,8 +122,8 @@ class FixityCheckRevisionAccessCheck implements AccessInterface {
       }
       else {
         // First check the access to the default revision and finally, if the
-        // fixity_check passed in is not the default revision then check access to
-        // that, too.
+        // fixity_check passed in is not the default revision then check access
+        // to that, too.
         $this->access[$cid] = $this->accessControlHandler->access($this->storage->load($fixity_check->id()), $op, $account) && ($fixity_check->isDefaultRevision() || $this->accessControlHandler->access($fixity_check, $op, $account));
       }
     }

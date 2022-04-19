@@ -4,7 +4,6 @@ namespace Drupal\dgi_fixity;
 
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\dgi_fixity\Form\SettingsForm;
 
 /**
@@ -25,9 +24,9 @@ class FixityCheckBatchGenerate {
     }
     $builder = new BatchBuilder();
     return $builder
-      ->setTitle(new TranslatableMarkup('Generating Fixity Checks for previously created files'))
-      ->setInitMessage(new TranslatableMarkup('Starting'))
-      ->setErrorMessage(new TranslatableMarkup('Batch has encountered an error'))
+      ->setTitle(\t('Generating Fixity Checks for previously created files'))
+      ->setInitMessage(\t('Starting'))
+      ->setErrorMessage(\t('Batch has encountered an error'))
       ->addOperation([static::class, 'generate'], [$batch_size])
       ->setFinishCallback([static::class, 'finished'])
       ->toArray();
@@ -63,7 +62,7 @@ class FixityCheckBatchGenerate {
       }
       catch (\Exception $e) {
         $results['failed']++;
-        $results['errors'][] = new TranslatableMarkup('Encountered an exception: @exception', [
+        $results['errors'][] = \t('Encountered an exception: @exception', [
           '@exception' => $e,
         ]);
       }
@@ -99,7 +98,7 @@ class FixityCheckBatchGenerate {
       '@count was successful.',
       '@count were successful.',
     ));
-    $messenger->addStatus(new TranslatableMarkup(
+    $messenger->addStatus(\t(
       '@count failed.', ['@count' => $results['failed']]
     ));
     $error_count = count($results['errors']);

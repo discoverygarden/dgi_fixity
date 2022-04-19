@@ -5,8 +5,6 @@
  * Provide views data for file.module.
  */
 
-use Drupal\Core\StringTranslation\TranslatableMarkup;
-
 /**
  * Implements hook_views_data_alter().
  */
@@ -32,14 +30,14 @@ function dgi_fixity_views_data_alter(&$data) {
     $data['file_managed'][$pseudo_field_name] = [
       'real field' => $field_type->getName(),
       'relationship' => [
-        'title' => new TranslatableMarkup('@entity using @field',
+        'title' => \t('@entity using @field',
           [
             '@entity' => $entity_type->getLabel(),
             '@field' => $field_type->getLabel(),
           ],
         ),
         'label' => $group,
-        'help' => new TranslatableMarkup('Relate each @entity with a @field set to the file.',
+        'help' => \t('Relate each @entity with a @field set to the file.',
           [
             '@entity' => $entity_type->getLabel(),
             '@field' => $field_type->getLabel(),

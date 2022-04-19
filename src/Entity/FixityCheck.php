@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\dgi_fixity\FixityCheckInterface;
 use Drupal\file\Entity\File;
 
@@ -73,8 +72,8 @@ class FixityCheck extends ContentEntityBase implements FixityCheckInterface {
     $fields = parent::baseFieldDefinitions($entity_type);
 
     $fields['file'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(new TranslatableMarkup('File'))
-      ->setDescription(new TranslatableMarkup('The file entity the fixity check was performed against.'))
+      ->setLabel(\t('File'))
+      ->setDescription(\t('The file entity the fixity check was performed against.'))
       ->setRequired(TRUE)
       ->setRevisionable(FALSE)
       ->setTranslatable(FALSE)
@@ -89,8 +88,8 @@ class FixityCheck extends ContentEntityBase implements FixityCheckInterface {
       ]);
 
     $fields['state'] = BaseFieldDefinition::create('integer')
-      ->setLabel(new TranslatableMarkup('State'))
-      ->setDescription(new TranslatableMarkup('A flag indicating the state of the whether the check passed or not.'))
+      ->setLabel(\t('State'))
+      ->setDescription(\t('A flag indicating the state of the whether the check passed or not.'))
       ->setTranslatable(FALSE)
       ->setRevisionable(TRUE)
       ->setInitialValue(static::STATE_UNDEFINED)

@@ -12,7 +12,6 @@ use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 use Drupal\dgi_fixity\EntityTypeInfo;
 use Drupal\dgi_fixity\Form\SettingsForm;
@@ -26,10 +25,10 @@ function dgi_fixity_modules_installed($modules) {
   // This section is only entered when this module is installed prior to either
   // of these optional dependencies installation.
   // In particular the optional view:
-  //   - `views.view.fixity_check_source_islandora`
+  // - views.view.fixity_check_source_islandora
   // Which requires the following fields:
-  //   - field.storage.media.field_media_use
-  //   - field.storage.taxonomy_term.field_external_uri
+  // - field.storage.media.field_media_use
+  // - field.storage.taxonomy_term.field_external_uri
   // Which are typically provided by `islandora_core_feature`.
   // All other optional configuration is for the `action` module.
   if (in_array('islandora_core_feature', $modules) || in_array('action', $modules)) {
@@ -81,13 +80,13 @@ function dgi_fixity_mail($key, &$message, $params) {
       }
 
       $now = \Drupal::time()->getRequestTime();
-      $subject = (new TranslatableMarkup('Fixity Check Report - @now', ['@now' => date(DATE_RFC7231, $now)]))->render();
+      $subject = \t('Fixity Check Report - @now', ['@now' => date(DATE_RFC7231, $now)])->render();
       $body = $fixity->summary($stats);
       if ($stats['failed'] !== 0) {
-        $body[] = (new TranslatableMarkup(
+        $body[] = \t(
           'There are failed checks which require your attention please review the current state of checks <a href="@site">here</a>.',
           ['@site' => Url::fromRoute('entity.fixity_check.collection', [], ['absolute' => TRUE])->toString()]
-        ))->render();
+        )->render();
       }
 
       $message['subject'] = $subject;
@@ -206,7 +205,7 @@ function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.dgi_fixity':
     case 'dgi_fixity.settings':
       $output = array_fill(0, 2, ['#type' => 'html_tag', '#tag' => 'p']);
-      $output[0]['#value'] = new TranslatableMarkup(
+      $output[0]['#value'] = \t(
         'The Fixity module validates selected files by generating hashes and comparing it against stored values produced by the <a href="@file_hash">File Hash module</a> for selected files uploaded to the site.',
         ['@file_hash' => URL::fromRoute('help.page', ['name' => 'filehash'])->toString()],
       );
