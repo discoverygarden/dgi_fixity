@@ -5,6 +5,9 @@ dgi_fixity.settings:
     sources:
       type: sequence
       label: 'File Selection for Fixity Checks'
+      sequence:
+        type: string
+        label: 'View and Display Identifier'
     threshold:
       type: string
       label: 'Time elapsed between Fixity Checks'
