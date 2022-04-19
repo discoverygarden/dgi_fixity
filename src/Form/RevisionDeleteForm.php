@@ -7,6 +7,7 @@ use Drupal\Core\Entity\RevisionableStorageInterface;
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\dgi_fixity\FixityCheckInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -97,8 +98,8 @@ class RevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $fixity_check_revision = NULL) {
-    $this->revision = $this->storage->loadRevision($fixity_check_revision);
+  public function buildForm(array $form, FormStateInterface $form_state, FixityCheckInterface $fixity_check_revision = NULL) {
+    $this->revision = $fixity_check_revision;
     $form = parent::buildForm($form, $form_state);
 
     return $form;
