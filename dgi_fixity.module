@@ -202,18 +202,16 @@ function dgi_fixity_file_delete(EntityInterface $entity) {
  * Implements hook_ENTITY_TYPE_revision_create().
  */
 function dgi_fixity_fixity_check_revision_create(EntityInterface $entity) {
-  Cache::invalidateTags([
-    'fixity_check:' . $entity->id() . ':revisions_list',
-  ]);
+  /** @var \Drupal\dgi_fixity\FixityCheckInterface $entity*/
+  Cache::invalidateTags($entity->getAuditCacheTags());
 }
 
 /**
  * Implements hook_ENTITY_TYPE_revision_delete().
  */
 function dgi_fixity_fixity_check_revision_delete(EntityInterface $entity) {
-  Cache::invalidateTags([
-    'fixity_check:' . $entity->id() . ':revisions_list',
-  ]);
+  /** @var \Drupal\dgi_fixity\FixityCheckInterface $entity*/
+  Cache::invalidateTags($entity->getAuditCacheTags());
 }
 
 /**

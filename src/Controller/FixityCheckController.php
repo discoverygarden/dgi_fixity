@@ -211,10 +211,7 @@ class FixityCheckController extends ControllerBase {
         // Date displayed varies by timezone.
         'timezone',
       ],
-      'tags' => [
-        // Invalidated by revision create/delete hooks.
-        'fixity_check:' . $fixity_check->id() . ':revisions_list',
-      ],
+      'tags' => $fixity_check->getAuditCacheTags(),
       'bin' => 'render',
     ];
     $this->renderer->addCacheableDependency($build, $fixity_check);

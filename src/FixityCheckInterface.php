@@ -226,4 +226,12 @@ interface FixityCheckInterface extends ContentEntityInterface, RevisionableInter
    */
   public function setQueued(int $queued): FixityCheckInterface;
 
+  /**
+   * The cache tags associated with the audit display of this entity.
+   *
+   * @return string[]
+   *   The cache tags.
+   */
+  public function getAuditCacheTags();
+
 }

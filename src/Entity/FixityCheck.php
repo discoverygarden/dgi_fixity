@@ -322,6 +322,15 @@ class FixityCheck extends ContentEntityBase implements FixityCheckInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getAuditCacheTags() {
+    return [
+      'fixity_check:' . $this->id() . ':revisions_list',
+    ];
+  }
+
+  /**
    * Defines allowed states for AllowedValues constraints.
    *
    * @return int[]
