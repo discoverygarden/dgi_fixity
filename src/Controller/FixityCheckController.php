@@ -129,10 +129,10 @@ class FixityCheckController extends ControllerBase {
             'fixity_check' => $fixity_check->id(),
             'fixity_check_revision' => $revision_id,
           ]
-        ))->toString();
+        ));
       }
       else {
-        $link = $fixity_check->toLink($date)->toString();
+        $link = $fixity_check->toLink($date);
         $currentRevisionDisplayed = TRUE;
       }
 
@@ -143,14 +143,10 @@ class FixityCheckController extends ControllerBase {
 
       $row = [
         [
-          'data' => [
-            '#markup' => $link,
-          ],
+          'data' => $link->toRenderable(),
         ],
         [
-          'data' => [
-            '#markup' => $this->renderer->renderRoot($state),
-          ],
+          'data' => $state,
         ],
       ];
 

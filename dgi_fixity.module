@@ -13,7 +13,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
-use Drupal\dgi_fixity\EntityTypeInfo;
 use Drupal\dgi_fixity\Form\SettingsForm;
 use Drupal\user\Entity\User;
 
