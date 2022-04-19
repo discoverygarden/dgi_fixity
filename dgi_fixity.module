@@ -23,7 +23,16 @@ use Drupal\user\Entity\User;
  */
 function dgi_fixity_modules_installed($modules) {
   // Install optional configuration for islandora / action.
-  if (in_array('islandora_defaults', $modules) || in_array('action', $modules)) {
+  // This section is only entered when this module is installed prior to either
+  // of these optional dependencies installation.
+  // In particular the optional view:
+  //   - `views.view.fixity_check_source_islandora`
+  // Which requires the following fields:
+  //   - field.storage.media.field_media_use
+  //   - field.storage.taxonomy_term.field_external_uri
+  // Which are typically provided by `islandora_core_feature`.
+  // All other optional configuration is for the `action` module.
+  if (in_array('islandora_core_feature', $modules) || in_array('action', $modules)) {
     $optional_install_path = \Drupal::moduleHandler()
       ->getModule('dgi_fixity')
       ->getPath() . '/' . InstallStorage::CONFIG_OPTIONAL_DIRECTORY;
