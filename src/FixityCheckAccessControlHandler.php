@@ -16,13 +16,24 @@ class FixityCheckAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    if ($account->hasPermission($this->entityType->getAdminPermission())) {
-      return AccessResult::allowed()->cachePerPermissions();
-    }
+    /** @var \Drupal\dgi_fixity\FixityCheckInterface $entity */
+    $admin_permission = $this->entityType->getAdminPermission();
 
     switch ($operation) {
       case 'view':
+      case 'view revision':
         return AccessResult::allowedIfHasPermission($account, 'view fixity checks')->cachePerPermissions();
+
+      case 'delete':
+        return AccessResult::allowedIfHasPermission($account, $admin_permission)->cachePerPermissions();
+
+      case 'delete revision':
+        // Not possible to delete the default revision, instead the user
+        // should delete the actual entity.
+        if ($entity->isDefaultRevision()) {
+          return AccessResult::forbidden()->addCacheableDependency($entity);
+        }
+        return AccessResult::allowedIfHasPermission($account, $admin_permission)->cachePerPermissions();
 
       default:
         return AccessResult::forbidden()->cachePerPermissions();

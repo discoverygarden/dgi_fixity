@@ -16,8 +16,3 @@ services:
     arguments: ['@entity_type.manager', '@entity.repository', '@dgi_fixity.fixity_check']
     tags:
       - { name: paramconverter }
-  access_check.fixity_check.revision:
-    class: Drupal\dgi_fixity\Access\FixityCheckRevisionAccessCheck
-    arguments: ['@entity_type.manager']
-    tags:
-      - { name: access_check, applies_to: _access_fixity_check_revision }

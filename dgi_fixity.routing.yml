@@ -28,7 +28,7 @@ entity.fixity_check.revision:
     _controller: '\Drupal\Core\Entity\Controller\EntityViewController::viewRevision'
     _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
   requirements:
-    _access_fixity_check_revision: 'view'
+    _entity_access: 'fixity_check_revision.view revision'
     fixity_check: \d+
     fixity_check_revision: \d+
   options:
@@ -45,7 +45,7 @@ entity.fixity_check.revision_delete_confirm:
     _form: '\Drupal\dgi_fixity\Form\RevisionDeleteForm'
     _title: 'Delete earlier check'
   requirements:
-    _access_fixity_check_revision: 'delete'
+    _entity_access: 'fixity_check_revision.delete revision'
     fixity_check: \d+
     fixity_check_revision: \d+
   options:
