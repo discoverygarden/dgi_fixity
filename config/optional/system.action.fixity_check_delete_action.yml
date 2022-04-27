@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - dgi_fixity
+id: fixity_check_delete_action
+label: 'Delete check'
+type: fixity_check
+plugin: entity:delete_action:fixity_check
+configuration: {  }

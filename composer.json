@@ -1,0 +1,8 @@
+{
+  "name": "discoverygarden/dgi_fixity",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "drupal/filehash": "^2.0"
+  }
+}

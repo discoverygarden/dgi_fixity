@@ -1,0 +1,12 @@
+name: 'Fixity'
+description: "Performs fixity checks on files."
+type: module
+package: DGI
+core_version_requirement: ^8 || ^9
+configure: dgi_fixity.settings
+dependencies:
+  - drupal:file
+  - drupal:media
+  - drupal:user
+  - drupal:views
+  - filehash:filehash

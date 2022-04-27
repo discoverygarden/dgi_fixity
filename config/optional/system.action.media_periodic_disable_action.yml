@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - dgi_fixity
+    - media
+id: media_periodic_disable_action
+label: 'Disable periodic media checks'
+type: media
+plugin: dgi_fixity:periodic_disable_action:media
+configuration: {  }

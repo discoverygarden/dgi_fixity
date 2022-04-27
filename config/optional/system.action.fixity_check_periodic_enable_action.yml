@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - dgi_fixity
+id: fixity_check_periodic_enable_action
+label: 'Enable periodic checks'
+type: fixity_check
+plugin: dgi_fixity:periodic_enable_action:fixity_check
+configuration: {  }

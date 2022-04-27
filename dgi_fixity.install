@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Install hook implementations.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function dgi_fixity_requirements($phase) {
+  $requirements = [];
+  if ($phase == 'runtime') {
+    /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
+    $fixity = \Drupal::service('dgi_fixity.fixity_check');
+    $stats = $fixity->stats();
+    $elements = [];
+    foreach ($fixity->summary($stats) as $summary) {
+      $elements[] = [
+        '#markup' => $summary,
+        '#suffix' => '<br/>',
+      ];
+    }
+    $failed = $stats['failed'] > 0;
+    $out_to_date = $stats['periodic']['expired'] > 0;
+    $requirements['dgi_fixity'] = [
+      'title' => \t('Fixity'),
+      'value' => $failed ? \t('Error') : ($out_to_date ? \t('Out of date') : \t('Up to date')),
+      'description' => \Drupal::service('renderer')->render($elements),
+      'severity' => $failed ? REQUIREMENT_ERROR : ($out_to_date ? REQUIREMENT_WARNING : REQUIREMENT_OK),
+    ];
+  }
+  return $requirements;
+}

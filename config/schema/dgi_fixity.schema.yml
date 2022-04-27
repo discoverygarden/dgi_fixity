@@ -1,0 +1,25 @@
+dgi_fixity.settings:
+  type: config_object
+  label: 'Fixity check settings'
+  mapping:
+    sources:
+      type: sequence
+      label: 'File Selection for Fixity Checks'
+      sequence:
+        type: string
+        label: 'View and Display Identifier'
+    threshold:
+      type: string
+      label: 'Time elapsed between Fixity Checks'
+    batch_size:
+      type: integer
+      label: 'How many files will be processed at once when performing a batch / cron job'
+    notify_status:
+      type: integer
+      label: 'Notification trigger on status'
+    notify_user:
+      type: integer
+      label: 'User to notify'
+    notify_user_threshold:
+      type: string
+      label: 'Time elapsed between notifications'

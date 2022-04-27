@@ -1,0 +1,233 @@
+<?php
+
+/**
+ * @file
+ * General hook implementations.
+ */
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Config\FileStorage;
+use Drupal\Core\Config\InstallStorage;
+use Drupal\Core\Config\StorageInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Mail\MailFormatHelper;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Url;
+use Drupal\dgi_fixity\Form\SettingsForm;
+use Drupal\user\Entity\User;
+
+/**
+ * Implements hook_modules_installed().
+ */
+function dgi_fixity_modules_installed($modules) {
+  // Install optional configuration for islandora / action.
+  // This section is only entered when this module is installed prior to either
+  // of these optional dependencies installation.
+  // In particular the optional view:
+  // - views.view.fixity_check_source_islandora
+  // Which requires the following fields:
+  // - field.storage.media.field_media_use
+  // - field.storage.taxonomy_term.field_external_uri
+  // Which are typically provided by `islandora_core_feature`.
+  // All other optional configuration is for the `action` module.
+  if (in_array('islandora_core_feature', $modules) || in_array('action', $modules)) {
+    $optional_install_path = \Drupal::moduleHandler()
+      ->getModule('dgi_fixity')
+      ->getPath() . '/' . InstallStorage::CONFIG_OPTIONAL_DIRECTORY;
+    /** @var \Drupal\Core\Config\ConfigInstallerInterface $config_installer */
+    $config_installer = \Drupal::service('config.installer');
+    $storage = new FileStorage($optional_install_path, StorageInterface::DEFAULT_COLLECTION);
+    // This will not overwrite the existing optional configuration if already
+    // installed.
+    $config_installer->installOptionalConfig($storage);
+  }
+}
+
+/**
+ * Implements hook_mail().
+ */
+function dgi_fixity_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'notify':
+      $config = \Drupal::config(SettingsForm::CONFIG_NAME);
+      $last = \Drupal::state()->get(SettingsForm::STATE_LAST_NOTIFICATION);
+
+      if ($last !== NULL) {
+        // If enough time has not elapsed since the last notification do not
+        // send again.
+        $threshold = strtotime($config->get(SettingsForm::NOTIFY_USER_THRESHOLD));
+        if ($last > $threshold) {
+          $message['send'] = FALSE;
+          return;
+        }
+      }
+
+      // Check if the configuration has enabled notifications.
+      $notify_status = $config->get(SettingsForm::NOTIFY_STATUS);
+      if ($notify_status === SettingsForm::NOTIFY_STATUS_NEVER) {
+        $message['send'] = FALSE;
+        return;
+      }
+
+      /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
+      $fixity = \Drupal::service('dgi_fixity.fixity_check');
+      $stats = $fixity->stats();
+      // Only notify if an error has occurred.
+      if ($notify_status == SettingsForm::NOTIFY_STATUS_ERROR && $stats['failed'] === FALSE) {
+        $message['send'] = FALSE;
+        return;
+      }
+
+      $options = ['langcode' => $message['langcode']];
+      $now = \Drupal::time()->getRequestTime();
+      $subject = \t('Fixity Check Report - @now', ['@now' => date(DATE_RFC7231, $now)], $options)->render();
+      $body = $fixity->summary($stats, $options);
+      if ($stats['failed'] !== 0) {
+        $body[] = \t(
+          'There are failed checks which require your attention please review the current state of checks <a href="@site">here</a>.',
+          ['@site' => Url::fromRoute('entity.fixity_check.collection', [], ['absolute' => TRUE])->toString()],
+          $options
+        )->render();
+      }
+
+      $message['subject'] = $subject;
+      foreach ($body as $line) {
+        $message['body'][] = MailFormatHelper::htmlToText($line);
+      }
+
+      // Track when the last message was sent.
+      \Drupal::state()->set(SettingsForm::STATE_LAST_NOTIFICATION, $now);
+      break;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function dgi_fixity_cron() {
+  $queued = \Drupal::time()->getRequestTime();
+  $settings = \Drupal::config(SettingsForm::CONFIG_NAME);
+  $threshold = strtotime($settings->get(SettingsForm::THRESHOLD));
+  $sources = $settings->get(SettingsForm::SOURCES);
+
+  // Update enabled periodic checks.
+  $queue = \Drupal::queue('dgi_fixity.process_source');
+  foreach ($sources as $source) {
+    // It safe to have queue processing a source multiple times,
+    // they will steal work from each other but will not conflict.
+    $queue->createItem($source);
+  }
+
+  /** @var \Drupal\dgi_fixity\FixityCheckStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('fixity_check');
+
+  // Queue items that exceed the current threshold.
+  $storage->queue($queued, $threshold, 100);
+
+  // Dequeued items after 6 hours assuming the check has failed.
+  // They will be re-queued if appropriate on the next cron run.
+  $storage->dequeue($queued - (3600 * 6));
+
+  // Send notification if appropriate.
+  $uid = $settings->get(SettingsForm::NOTIFY_USER);
+  $user = User::load($uid);
+  if ($user) {
+    \Drupal::service('plugin.manager.mail')->mail('dgi_fixity', 'notify', $user->getEmail(), $user->getPreferredLangcode(TRUE));
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ */
+function dgi_fixity_entity_type_alter(array &$entity_types) {
+  /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
+  $fixity = \Drupal::service('dgi_fixity.fixity_check');
+  $supported_entity_types = $fixity->fromEntityTypes();
+  foreach ($supported_entity_types as $entity_type_id) {
+    $entity_type = &$entity_types[$entity_type_id];
+    $entity_type->setLinkTemplate('fixity-audit', "/fixity/$entity_type_id/{{$entity_type_id}}");
+    $entity_type->setLinkTemplate('fixity-check', "/fixity/$entity_type_id/{{$entity_type_id}}/check");
+    $entity_type->setFormClass('fixity-check', 'Drupal\dgi_fixity\Form\CheckForm');
+  }
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function dgi_fixity_entity_operation(EntityInterface $entity) {
+  $current_user = \Drupal::service('current_user');
+  $operations = [];
+  if ($entity->hasLinkTemplate('fixity-audit') && $current_user->hasPermission('view fixity checks')) {
+    $operations['fixity-audit'] = [
+      'title' => \t('Audit'),
+      'weight' => 10,
+      'url' => $entity->toUrl('fixity-audit'),
+    ];
+    if ($entity->hasLinkTemplate('fixity-check') && $current_user->hasPermission('administer fixity checks')) {
+      $operations['fixity-check'] = [
+        'title' => \t('Check'),
+        'weight' => 13,
+        'url' => $entity->toUrl('fixity-check', ['query' => \Drupal::service('redirect.destination')->getAsArray()]),
+      ];
+    }
+  }
+  return $operations;
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function dgi_fixity_file_insert(EntityInterface $entity) {
+  // Make sure the fixity_check table contains a row for every file.
+  \Drupal::entityTypeManager()
+    ->getStorage('fixity_check')
+    ->create([
+      'file' => $entity->id(),
+    ])
+    ->save();
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
+ */
+function dgi_fixity_file_delete(EntityInterface $entity) {
+  /** @var \Drupal\dgi_fixity\FixityCheckStorageInterface $storage */
+  $storage = \Drupal::entityTypeManager()->getStorage('fixity_check');
+  $checks = $storage->loadByProperties([
+    'file' => $entity->id(),
+  ]);
+  // Remove checks for non-existent files.
+  $storage->delete($checks);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_revision_create().
+ */
+function dgi_fixity_fixity_check_revision_create(EntityInterface $entity) {
+  /** @var \Drupal\dgi_fixity\FixityCheckInterface $entity*/
+  Cache::invalidateTags($entity->getAuditCacheTags());
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_revision_delete().
+ */
+function dgi_fixity_fixity_check_revision_delete(EntityInterface $entity) {
+  /** @var \Drupal\dgi_fixity\FixityCheckInterface $entity*/
+  Cache::invalidateTags($entity->getAuditCacheTags());
+}
+
+/**
+ * Implements hook_help().
+ */
+function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.dgi_fixity':
+    case 'dgi_fixity.settings':
+      $output = array_fill(0, 2, ['#type' => 'html_tag', '#tag' => 'p']);
+      $output[0]['#value'] = \t(
+        'The Fixity module validates selected files by generating hashes and comparing it against stored values produced by the <a href="@file_hash">File Hash module</a> for selected files uploaded to the site.',
+        ['@file_hash' => URL::fromRoute('help.page', ['name' => 'filehash'])->toString()],
+      );
+      return $output;
+  }
+}

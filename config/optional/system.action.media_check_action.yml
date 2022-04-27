@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - media
+    - dgi_fixity
+id: media_check_action
+label: 'Check media'
+type: media
+plugin: dgi_fixity:check_action:media
+configuration: {  }
