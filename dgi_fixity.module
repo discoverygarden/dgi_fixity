@@ -10,10 +10,15 @@ use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Config\InstallStorage;
 use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
+use Drupal\Core\Field\WidgetInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailFormatHelper;
+use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\dgi_fixity\Form\SettingsForm;
+use Drupal\file\Plugin\Field\FieldWidget\FileWidget;
 use Drupal\user\Entity\User;
 
 /**
@@ -229,5 +234,105 @@ function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
         ['@file_hash' => URL::fromRoute('help.page', ['name' => 'filehash'])->toString()],
       );
       return $output;
+  }
+}
+
+/**
+ * Implements hook_field_widget_third_party_settings_form().
+ */
+function dgi_fixity_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, $form, FormStateInterface $form_state) {
+  $element = [];
+  if ($plugin instanceof FileWidget) {
+    $field_name = $field_definition->getName();
+    $element['validate'] = [
+      '#type' => 'checkbox',
+      '#title' => \t('Show Validate Upload Elements'),
+      '#description' => \t('Displays a field for each enabled <em>filehash</em> algorithm, allowing the user to validate the uploaded file(s).'),
+      '#default_value' => $plugin->getThirdPartySetting('dgi_fixity', 'validate', FALSE),
+    ];
+    $element['validate_require'] = [
+      '#type' => 'checkbox',
+      '#title' => \t('Require Checksums'),
+      '#description' => \t('User is prevented from submitting the form unless all enabled <em>filehash</em> algorithms match the user provided values.'),
+      '#default_value' => $plugin->getThirdPartySetting('dgi_fixity', 'validate_require', FALSE),
+      '#states' => [
+        'visible' => [
+          ":input[name=\"fields[${field_name}][settings_edit_form][third_party_settings][dgi_fixity][validate]\"]" => ['checked' => TRUE],
+        ],
+      ],
+    ];
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_widget_single_element_form_alter().
+ */
+function dgi_fixity_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
+  // Set a message if this is for the form displayed to set default value for
+  // the field.
+  $widget = $context['widget'] ?? NULL;
+  if ($widget instanceof FileWidget) {
+    $settings = $widget->getThirdPartySettings('dgi_fixity');
+    if ($settings['validate'] ?? FALSE) {
+      /** @var \Drupal\filehash\FileHashInterface $filehash */
+      $filehash = \Drupal::service('filehash');
+      $labels = $filehash->labels();
+      $descriptions = $filehash->descriptions();
+
+      $element['#process'][] = '_dgi_fixity_file_widget_process';
+      $element['#element_validate'][] = '_dgi_fixity_file_widget_validate';
+      $element['algorithms'] = [
+        '#title' => \t('Validate Upload'),
+        '#type' => 'details',
+        '#weight' => 100,
+      ];
+      foreach ($filehash->columns() as $column) {
+        $element['algorithms'][$column] = [
+          '#type' => 'textfield',
+          '#title' => $labels[$column],
+          '#description' => $descriptions[$column],
+          '#column' => $column,
+          '#required' => $settings['validate_require'] ?? FALSE,
+        ];
+      }
+    }
+  }
+}
+
+/**
+ * Sets default values for checksums if none provided.
+ *
+ * Done in the process step as the FileWidget process step is responsible for
+ * loading the file entity from which the default is derived.
+ */
+function _dgi_fixity_file_widget_process(&$element, FormStateInterface $form_state, &$complete_form) {
+  $file = reset($element['#files']) ?? NULL;
+  $element['algorithms']['#access'] = (bool) $element['#value']['fids'];
+  foreach (Element::children($element['algorithms']) as $column) {
+    $default_value = $element['#value']['algorithms'][$column] ?? NULL;
+    $default_value = $default_value ?? (isset($file->{$column}) ? $file->{$column}->value : NULL);
+    $element['algorithms'][$column]['#default_value'] = $default_value;
+  }
+  return $element;
+}
+
+/**
+ * Validate user provided value against the value calculated by filehash.
+ */
+function _dgi_fixity_file_widget_validate($element, FormStateInterface $form_state) {
+  $file = reset($element['#files']) ?? NULL;
+  foreach (Element::children($element['algorithms']) as $column) {
+    $algorithm = &$element['algorithms'][$column];
+    $provided = $algorithm['#value'];
+    $expected = $file->{$column}->value;
+    // If not required and no value given skip validation.
+    $ignore = !$algorithm['#required'] && empty($provided);
+    if (!$ignore && $provided !== $expected) {
+      $form_state->setError($algorithm, \t(
+        'Provided value "@provided" did not match expected value "@expected".',
+        ['@provided' => $provided, '@expected' => $expected]
+      ));
+    }
   }
 }
