@@ -179,7 +179,7 @@ class FixityCheckBatchCheck {
     }
 
     $files = $storage->getPeriodic($sandbox['offset'], $batch_size);
-    $end = min($sandbox['total'], $sandbox['offset'] + count($files));
+    $end = min($sandbox['remaining'], $sandbox['offset'] + count($files));
     $context['message'] = \t('Processing @start to @end', [
       '@start' => $sandbox['offset'],
       '@end' => $end,
