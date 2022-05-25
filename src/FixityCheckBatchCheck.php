@@ -219,6 +219,9 @@ class FixityCheckBatchCheck {
           if ($result->passed()) {
             $results['successful']++;
           }
+          else {
+            $results['failed']++;
+          }
         }
         else {
           // The check was not performed as the time elapsed since the last

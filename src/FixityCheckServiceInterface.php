@@ -100,7 +100,7 @@ interface FixityCheckServiceInterface {
    *   elapsed since the last check has not exceed the required threshold.
    *
    * @return \Drupal\dgi_fixity\Entity\FixityCheckInterface|null
-   *   The resulting fixity_check if successful.
+   *   The resulting fixity_check if performed.
    *   NULL if the check was not performed because the time elapsed since the
    *   last check has not exceed the required threshold.
    */
