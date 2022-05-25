@@ -24,6 +24,7 @@ class FixityCheckAccessControlHandler extends EntityAccessControlHandler {
       case 'view revision':
         return AccessResult::allowedIfHasPermission($account, 'view fixity checks')->cachePerPermissions();
 
+      case 'update':
       case 'delete':
         return AccessResult::allowedIfHasPermission($account, $admin_permission)->cachePerPermissions();
 
