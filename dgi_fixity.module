@@ -309,8 +309,7 @@ function _dgi_fixity_file_widget_process(&$element, FormStateInterface $form_sta
   $file = reset($element['#files']) ?? NULL;
   $element['algorithms']['#access'] = (bool) $element['#value']['fids'];
   foreach (Element::children($element['algorithms']) as $column) {
-    $default_value = $element['#value']['algorithms'][$column] ?? NULL;
-    $default_value = $default_value ?? (isset($file->{$column}) ? $file->{$column}->value : NULL);
+    $default_value = $element['#value']['algorithms'][$column] ?? $file->{$column}->value ?? NULL;
     $element['algorithms'][$column]['#default_value'] = $default_value;
   }
   return $element;
