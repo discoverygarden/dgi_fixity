@@ -237,6 +237,9 @@ function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
   }
 }
 
+/**
+ * Gets dgi_fixity file widget settings.
+ */
 function _dgi_fixity_file_widget_validate_settings(FileWidget $plugin) {
   return [
     'validate' => $plugin->getThirdPartySetting('dgi_fixity', 'validate', FALSE),
