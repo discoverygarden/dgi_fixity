@@ -237,23 +237,31 @@ function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
   }
 }
 
+function _dgi_fixity_file_widget_validate_settings(FileWidget $plugin) {
+  return [
+    'validate' => $plugin->getThirdPartySetting('dgi_fixity', 'validate', FALSE),
+    'validate_require' => $plugin->getThirdPartySetting('dgi_fixity', 'validate_require', FALSE),
+  ];
+}
+
 /**
  * Implements hook_field_widget_third_party_settings_form().
  */
 function dgi_fixity_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, $form, FormStateInterface $form_state) {
   $element = [];
   if ($plugin instanceof FileWidget) {
+    $settings = _dgi_fixity_file_widget_validate_settings($plugin);
     $element['validate'] = [
       '#type' => 'checkbox',
       '#title' => \t('Show Validate Upload Elements'),
       '#description' => \t('Displays a field for each enabled <em>filehash</em> algorithm, allowing the user to validate the uploaded file(s).'),
-      '#default_value' => $plugin->getThirdPartySetting('dgi_fixity', 'validate', FALSE),
+      '#default_value' => $settings['validate'],
     ];
     $element['validate_require'] = [
       '#type' => 'checkbox',
       '#title' => \t('Require Checksums'),
       '#description' => \t('User is prevented from submitting the form unless all enabled <em>filehash</em> algorithms match the user provided values.'),
-      '#default_value' => $plugin->getThirdPartySetting('dgi_fixity', 'validate_require', FALSE),
+      '#default_value' => $settings['validate_require'],
       '#states' => [
         'visible' => [
           ":input[name=\"fields[{$field_definition->getName()}][settings_edit_form][third_party_settings][dgi_fixity][validate]\"]" => ['checked' => TRUE],
@@ -270,10 +278,10 @@ function dgi_fixity_field_widget_third_party_settings_form(WidgetInterface $plug
 function dgi_fixity_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
   // Set a message if this is for the form displayed to set default value for
   // the field.
-  $widget = $context['widget'] ?? NULL;
-  if ($widget instanceof FileWidget) {
-    $settings = $widget->getThirdPartySettings('dgi_fixity');
-    if ($settings['validate'] ?? FALSE) {
+  $plugin = $context['widget'] ?? NULL;
+  if ($plugin instanceof FileWidget) {
+    $settings = _dgi_fixity_file_widget_validate_settings($plugin);
+    if ($settings['validate']) {
       /** @var \Drupal\filehash\FileHashInterface $filehash */
       $filehash = \Drupal::service('filehash');
       $labels = $filehash->labels();
@@ -292,7 +300,7 @@ function dgi_fixity_field_widget_single_element_form_alter(&$element, FormStateI
           '#title' => $labels[$column],
           '#description' => $descriptions[$column],
           '#column' => $column,
-          '#required' => $settings['validate_require'] ?? FALSE,
+          '#required' => $settings['validate_require'],
         ];
       }
     }
@@ -306,8 +314,8 @@ function dgi_fixity_field_widget_single_element_form_alter(&$element, FormStateI
  * loading the file entity from which the default is derived.
  */
 function _dgi_fixity_file_widget_process(&$element, FormStateInterface $form_state, &$complete_form) {
-  $file = reset($element['#files']) ?? NULL;
-  $element['algorithms']['#access'] = (bool) $element['#value']['fids'];
+  $file = reset($element['#files']);
+  $element['algorithms']['#access'] = $file != FALSE;
   foreach (Element::children($element['algorithms']) as $column) {
     $default_value = $element['#value']['algorithms'][$column] ?? $file->{$column}->value ?? NULL;
     $element['algorithms'][$column]['#default_value'] = $default_value;
@@ -319,7 +327,7 @@ function _dgi_fixity_file_widget_process(&$element, FormStateInterface $form_sta
  * Validate user provided value against the value calculated by filehash.
  */
 function _dgi_fixity_file_widget_validate($element, FormStateInterface $form_state) {
-  $file = reset($element['#files']) ?? NULL;
+  $file = reset($element['#files']);
   foreach (Element::children($element['algorithms']) as $column) {
     $algorithm = &$element['algorithms'][$column];
     $provided = $algorithm['#value'];
