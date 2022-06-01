@@ -243,7 +243,6 @@ function dgi_fixity_help($route_name, RouteMatchInterface $route_match) {
 function dgi_fixity_field_widget_third_party_settings_form(WidgetInterface $plugin, FieldDefinitionInterface $field_definition, $form_mode, $form, FormStateInterface $form_state) {
   $element = [];
   if ($plugin instanceof FileWidget) {
-    $field_name = $field_definition->getName();
     $element['validate'] = [
       '#type' => 'checkbox',
       '#title' => \t('Show Validate Upload Elements'),
@@ -257,7 +256,7 @@ function dgi_fixity_field_widget_third_party_settings_form(WidgetInterface $plug
       '#default_value' => $plugin->getThirdPartySetting('dgi_fixity', 'validate_require', FALSE),
       '#states' => [
         'visible' => [
-          ":input[name=\"fields[${field_name}][settings_edit_form][third_party_settings][dgi_fixity][validate]\"]" => ['checked' => TRUE],
+          ":input[name=\"fields[{$field_definition->getName()}][settings_edit_form][third_party_settings][dgi_fixity][validate]\"]" => ['checked' => TRUE],
         ],
       ],
     ];
