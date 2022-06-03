@@ -23,3 +23,13 @@ dgi_fixity.settings:
     notify_user_threshold:
       type: string
       label: 'Time elapsed between notifications'
+
+field.widget.third_party.dgi_fixity:
+  type: mapping
+  mapping:
+    validate:
+      type: boolean
+      label: Show Validate Upload Elements
+    validate_require:
+      type: boolean
+      label: Require Checksums

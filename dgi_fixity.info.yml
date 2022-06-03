@@ -9,4 +9,5 @@ dependencies:
   - drupal:media
   - drupal:user
   - drupal:views
+  - drupal:field_ui
   - filehash:filehash
