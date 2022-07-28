@@ -95,6 +95,10 @@ Current maintainers:
 
 * [discoverygarden]
 
+Sponsors:
+
+* [CTDA: Connecticut Digital Archive]
+
 ## Development
 
 If you would like to contribute to this module create an issue, pull request
@@ -108,3 +112,4 @@ and or contact [discoverygarden].
 [filehash]: https://www.drupal.org/project/filehash
 [gplv2]: http://www.gnu.org/licenses/gpl-2.0.txt
 [install]: https://drupal.org/documentation/install/modules-themes/modules-8
+[CTDA: Connecticut Digital Archive]: https://lib.uconn.edu/find/connecticut-digital-archive/
