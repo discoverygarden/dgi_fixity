@@ -1,6 +1,6 @@
 services:
   dgi_fixity.commands.fixity_check:
     class: \Drupal\dgi_fixity\Commands\FixityCheck
-    arguments: ['@string_translation', '@logger.dblog', '@entity_type.manager']
+    arguments: ['@string_translation', '@logger.channel.dgi_fixity', '@entity_type.manager']
     tags:
       - { name: drush.command }
