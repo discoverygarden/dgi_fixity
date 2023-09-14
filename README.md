@@ -6,10 +6,10 @@ Perform periodic fixity checks on selected files.
 
 This module defines a new content entity type `fixity_check`. This entity is
 used as an audit trail for fixity checks performed on a related `file` entity.
-Wherein the revisions of the `fixity_check` record the results of previous 
+Wherein the revisions of the `fixity_check` record the results of previous
 checks against that `file` entity.
 
-This modules requires and enforces the following constraints on `fixity_check` 
+This modules requires and enforces the following constraints on `fixity_check`
 entities:
 
 - **Must** be related to a `file`
@@ -29,7 +29,7 @@ Users with the permission `View Fixity Checks` can:
 - View fixity audit log of Media entities
 
 A `cron` hook is setup to automatically mark files as _requiring_ periodic
-checks. As well as performing those checks on a regular basis. Email 
+checks. As well as performing those checks on a regular basis. Email
 notifications can be configured to alert the selected user of the status
 of all performed checks on a regular basis or only when an error occurs.
 
@@ -111,5 +111,5 @@ and or contact [discoverygarden].
 [discoverygarden]: http://support.discoverygarden.ca
 [filehash]: https://www.drupal.org/project/filehash
 [gplv2]: http://www.gnu.org/licenses/gpl-2.0.txt
-[install]: https://drupal.org/documentation/install/modules-themes/modules-8
+[install]: https://www.drupal.org/docs/extending-drupal/installing-modules
 [CTDA: Connecticut Digital Archive]: https://lib.uconn.edu/find/connecticut-digital-archive/

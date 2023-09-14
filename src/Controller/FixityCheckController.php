@@ -235,6 +235,7 @@ class FixityCheckController extends ControllerBase {
       ->condition('id', $fixity_check->id())
       ->sort('performed', 'DESC')
       ->pager(50)
+      ->accessCheck()
       ->execute();
     return array_keys($result);
   }
