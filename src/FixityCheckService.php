@@ -293,6 +293,7 @@ class FixityCheckService implements FixityCheckServiceInterface {
       ->condition('performed', 0, '!=')
       ->groupBy('state')
       ->aggregate('id', 'COUNT')
+      ->accessCheck(FALSE)
       ->execute();
 
     $failed = 0;
@@ -312,12 +313,14 @@ class FixityCheckService implements FixityCheckServiceInterface {
     $periodic = (int) $storage->getQuery('AND')
       ->count('id')
       ->condition('periodic', TRUE)
+      ->accessCheck(FALSE)
       ->execute();
 
     // All checks performed ever.
     $revisions = (int) $storage->getQuery('AND')
       ->allRevisions()
       ->count('id')
+      ->accessCheck(FALSE)
       ->execute();
 
     // Checks which have exceeded the threshold and should be performed again.
@@ -326,6 +329,7 @@ class FixityCheckService implements FixityCheckServiceInterface {
       ->condition('periodic', TRUE)
       ->condition('performed', $threshold, '>=')
       ->count('id')
+      ->accessCheck(FALSE)
       ->execute();
 
     // Up to date checks.
