@@ -22,6 +22,13 @@ class FixityCheckRouteSubscriber extends RouteSubscriberBase {
   protected $fixity;
 
   /**
+   * The entity type manager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected EntityTypeManagerInterface $entityTypeManager;
+
+  /**
    * Subscriber for Fixity Check routes.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
