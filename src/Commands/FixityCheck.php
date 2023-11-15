@@ -50,7 +50,7 @@ class FixityCheck extends DrushCommands {
     /** @var \Drupal\dgi_fixity\FixityCheckStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage('fixity_check');
     $count = $storage->countPeriodic();
-    if ($this->io()->confirm("This will remove periodic checks on ${count} files, are you sure?", FALSE)) {
+    if ($this->io()->confirm("This will remove periodic checks on {$count} files, are you sure?", FALSE)) {
       $storage->clearPeriodic();
     }
   }
