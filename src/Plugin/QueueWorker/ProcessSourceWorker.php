@@ -2,9 +2,12 @@
 
 namespace Drupal\dgi_fixity\Plugin\QueueWorker;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Queue\RequeueException;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\dgi_fixity\FixityCheckServiceInterface;
 use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -28,6 +31,20 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
   protected $fixity;
 
   /**
+   * The account switcher service.
+   *
+   * @var \Drupal\Core\Session\AccountSwitcherInterface
+   */
+  protected $accountSwitcher;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new FixityCheckWorker instance.
    *
    * @param array $configuration
@@ -38,10 +55,17 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
    *   The plugin implementation definition.
    * @param \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity
    *   The fixity check service.
+   * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
+   *   The account switcher service.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FixityCheckServiceInterface $fixity) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FixityCheckServiceInterface $fixity,
+    AccountSwitcherInterface $account_switcher, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->fixity = $fixity;
+    $this->accountSwitcher = $account_switcher;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -53,6 +77,8 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
       $plugin_id,
       $plugin_definition,
       $container->get('dgi_fixity.fixity_check'),
+      $container->get('account_switcher'),
+      $container->get('entity_type.manager'),
     );
   }
 
@@ -61,26 +87,31 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
    */
   public function processItem($data) {
     // To avoid expensive access calls
-    $account_switcher = \Drupal::service('account_switcher');
-    $account_switcher->switchTo(User::load(1));
+    $user_storage = $this->entityTypeManager->getStorage('user');
+    $account = $user_storage->load(1);
 
-    /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
-    $fixity = \Drupal::service('dgi_fixity.fixity_check');
-    $view = $fixity->source($data, 1000);
-    $view->execute();
-    // Only processes those which have not already enabled periodic checks.
-    foreach ($view->result as $row) {
-      /** @var \Drupal\dgi_fixity\FixityCheckInterface $check */
-      $check = $view->field['periodic']->getEntity($row);
-      $check->setPeriodic(TRUE);
-      $check->save();
-    }
-    // Not finished processing.
-    if (count($view->result) !== 0) {
-      throw new RequeueException();
-    }
+    if ($account instanceof AccountInterface) {
+      $this->accountSwitcher->switchTo($account);
 
-    $account_switcher->switchBack();
+      /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
+      $fixity = \Drupal::service('dgi_fixity.fixity_check');
+      $view = $fixity->source($data, 1000);
+      $view->execute();
+      // Only processes those which have not already enabled periodic checks.
+      foreach ($view->result as $row) {
+        /** @var \Drupal\dgi_fixity\FixityCheckInterface $check */
+        $check = $view->field['periodic']->getEntity($row);
+        $check->setPeriodic(TRUE);
+        $check->save();
+      }
+      // Not finished processing.
+      if (count($view->result) !== 0) {
+        $this->accountSwitcher->switchBack();
+        throw new RequeueException();
+      }
+
+      $this->accountSwitcher->switchBack();
+    }
   }
 
 }
