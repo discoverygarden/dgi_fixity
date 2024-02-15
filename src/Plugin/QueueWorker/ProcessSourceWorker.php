@@ -9,7 +9,6 @@ use Drupal\Core\Queue\RequeueException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Session\AccountSwitcherInterface;
 use Drupal\dgi_fixity\FixityCheckServiceInterface;
-use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -60,8 +59,7 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FixityCheckServiceInterface $fixity,
-    AccountSwitcherInterface $account_switcher, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, FixityCheckServiceInterface $fixity, AccountSwitcherInterface $account_switcher, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->fixity = $fixity;
     $this->accountSwitcher = $account_switcher;
@@ -86,7 +84,7 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
    * {@inheritdoc}
    */
   public function processItem($data) {
-    // To avoid expensive access calls
+    // To avoid expensive access calls.
     $user_storage = $this->entityTypeManager->getStorage('user');
     $account = $user_storage->load(1);
 
