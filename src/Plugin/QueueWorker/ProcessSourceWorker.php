@@ -6,6 +6,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Queue\RequeueException;
 use Drupal\dgi_fixity\FixityCheckServiceInterface;
+use Drupal\user\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -59,6 +60,10 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
    * {@inheritdoc}
    */
   public function processItem($data) {
+    // To avoid expensive access calls
+    $account_switcher = \Drupal::service('account_switcher');
+    $account_switcher->switchTo(User::load(1));
+
     /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
     $fixity = \Drupal::service('dgi_fixity.fixity_check');
     $view = $fixity->source($data, 1000);
@@ -74,6 +79,8 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
     if (count($view->result) !== 0) {
       throw new RequeueException();
     }
+
+    $account_switcher->switchBack();
   }
 
 }
