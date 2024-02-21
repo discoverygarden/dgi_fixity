@@ -7,7 +7,6 @@ use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\dgi_fixity\FixityCheckServiceInterface;
 use Drupal\dgi_fixity\FixityCheckInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use function PHPUnit\Framework\isEmpty;
 
 /**
  * Performs a fixity check.
@@ -61,7 +60,7 @@ class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPlugi
    */
   public function processItem($data) {
     if ($data instanceof FixityCheckInterface) {
-      if (isEmpty($data->getFile())) {
+      if (empty($data->getFile())) {
         $data->delete();
         return;
       }
