@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @QueueWorker(
  *   id = "dgi_fixity.fixity_check",
  *   title = @Translation("Fixity Checks"),
- *   cron = {"time" = 1}
+ *   cron = {"time" = 15}
  * )
  */
 class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
