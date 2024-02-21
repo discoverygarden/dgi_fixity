@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @QueueWorker(
  *   id = "dgi_fixity.fixity_check",
  *   title = @Translation("Fixity Checks"),
- *   cron = {"time" = 15}
+ *   cron = {"time" = 1}
  * )
  */
 class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPluginInterface {
@@ -62,10 +62,10 @@ class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPlugi
     if ($data instanceof FixityCheckInterface) {
       if (empty($data->getFile())) {
         $data->delete();
-        return;
+      } else {
+        /** @var \Drupal\dgi_fixity\FixityCheckInterface $data */
+        $this->fixity->check($data->getFile());
       }
-      /** @var \Drupal\dgi_fixity\FixityCheckInterface $data */
-      $this->fixity->check($data->getFile());
     }
   }
 
