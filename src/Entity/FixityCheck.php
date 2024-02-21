@@ -208,7 +208,13 @@ class FixityCheck extends ContentEntityBase implements FixityCheckInterface {
   public function getFile(): ?File {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemList $file */
     $file = $this->file;
-    return $file->isEmpty() ? NULL : $file->referencedEntities()[0];
+
+    if ($file->isEmpty()) {
+      return NULL;
+    }
+
+    $referenced_entities = $file->referencedEntities();
+    return !empty($referenced_entities) ? reset($referenced_entities) : NULL;
   }
 
   /**
