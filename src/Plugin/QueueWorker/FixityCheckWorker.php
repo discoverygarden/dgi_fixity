@@ -60,13 +60,8 @@ class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPlugi
    */
   public function processItem($data) {
     if ($data instanceof FixityCheckInterface) {
-      if (empty($data->getFile())) {
-        $data->delete();
-      }
-      else {
-        /** @var \Drupal\dgi_fixity\FixityCheckInterface $data */
-        $this->fixity->check($data->getFile());
-      }
+      /** @var \Drupal\dgi_fixity\FixityCheckInterface $data */
+      $this->fixity->check($data->getFile());
     }
   }
 
