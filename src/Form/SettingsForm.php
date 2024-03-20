@@ -209,7 +209,7 @@ class SettingsForm extends ConfigFormBase {
         '#title' => $this->t('Time elapsed'),
         '#description' => $this->t('
           <p>Time threshold is relative to "<em>now</em>". For example "<em>-1 week</em>" would mean a week must pass between notifications.</p>
-          <p>Check <a href="https://www.php.net/manual/en/datetime.formats.relative.php">Relative Formats</a> for acceptable values</p>
+          <p>Check <a href="https://www.php.net/manual/en/datetime.formats.php#datetime.formats.relative">Relative Formats</a> for acceptable values</p>
         '),
         '#default_value' => $notification_threshold,
         '#element_validate' => [
