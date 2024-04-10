@@ -187,9 +187,10 @@ class FixityCheckBatchCheck {
     static::check($files, $force, $results);
     $sandbox['offset'] = $end;
 
-    $remaining = $storage->countPeriodic();
+    $remaining = $storage->countPeriodic() - $end;
+
     $progress_halted = $sandbox['remaining'] == $remaining;
-    $sandbox['remaining'] = $remaining;
+    $sandbox['remaining'] = $storage->countPeriodic();
 
     // End when we have exhausted all inputs or progress has halted.
     $context['finished'] = empty($files) || $progress_halted;
