@@ -170,7 +170,7 @@ class FixityCheckBatchCheck {
     $results = &$context['results'];
     if (!isset($sandbox['offset'])) {
       $sandbox['offset'] = 0;
-      $sandbox['remaining'] = $storage->countPeriodic();
+      $sandbox['count'] = $storage->countPeriodic();
       $results['successful'] = 0;
       $results['ignored'] = 0;
       $results['skipped'] = 0;
@@ -179,7 +179,8 @@ class FixityCheckBatchCheck {
     }
 
     $files = $storage->getPeriodic($sandbox['offset'], $batch_size);
-    $end = min($sandbox['remaining'], $sandbox['offset'] + count($files));
+
+    $end = min($sandbox['count'], $sandbox['offset'] + count($files));
     $context['message'] = \t('Processing @start to @end', [
       '@start' => $sandbox['offset'],
       '@end' => $end,
@@ -187,12 +188,7 @@ class FixityCheckBatchCheck {
     static::check($files, $force, $results);
     $sandbox['offset'] = $end;
 
-    $remaining = $storage->countPeriodic();
-    $progress_halted = $sandbox['remaining'] == $remaining;
-    $sandbox['remaining'] = $remaining;
-
-    // End when we have exhausted all inputs or progress has halted.
-    $context['finished'] = empty($files) || $progress_halted;
+    $context['finished'] = ($sandbox['count'] <= $end);
   }
 
   /**
