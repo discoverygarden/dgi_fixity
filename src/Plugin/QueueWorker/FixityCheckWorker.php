@@ -4,8 +4,8 @@ namespace Drupal\dgi_fixity\Plugin\QueueWorker;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
-use Drupal\dgi_fixity\FixityCheckServiceInterface;
 use Drupal\dgi_fixity\FixityCheckInterface;
+use Drupal\dgi_fixity\FixityCheckServiceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
