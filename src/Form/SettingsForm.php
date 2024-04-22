@@ -155,7 +155,7 @@ class SettingsForm extends ConfigFormBase {
         '#description' => $this->t('
           <p>Set how many files will be processed at once when performing a batch / cron job</p>
         '),
-        '#default_value' => 100,
+        '#default_value' => $config->get(static::BATCH_SIZE) ?: 100,
       ],
     ];
 
