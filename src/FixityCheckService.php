@@ -18,7 +18,6 @@ use Drupal\filehash\FileHash;
 use Drupal\media\MediaInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
-use Psr\Log\LoggerInterface;
 
 /**
  * Decorates the FileHash services adding additional functionality.
@@ -51,7 +50,7 @@ class FixityCheckService implements FixityCheckServiceInterface {
   /**
    * The logger for this service.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
