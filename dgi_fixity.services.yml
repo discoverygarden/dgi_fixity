@@ -1,4 +1,7 @@
 services:
+  logger.channel.dgi_fixity:
+    parent: logger.channel_base
+    arguments: [ 'dgi_fixity' ]
   dgi_fixity.fixity_check:
     class: Drupal\dgi_fixity\FixityCheckService
     arguments: ['@string_translation', '@config.factory', '@entity_type.manager', '@datetime.time', '@logger.channel.dgi_fixity', '@filehash']
@@ -12,6 +15,3 @@ services:
     arguments: ['@entity_type.manager', '@entity.repository', '@dgi_fixity.fixity_check']
     tags:
       - { name: paramconverter }
-  logger.channel.dgi_fixity:
-    parent: logger.channel_base
-    arguments: ['dgi_fixity']
