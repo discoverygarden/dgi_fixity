@@ -12,6 +12,11 @@ use Drupal\views\ViewExecutable;
  */
 interface FixityCheckServiceInterface {
 
+  const ENTITY_TYPES = [
+    'media',
+    'file',
+  ];
+
   /**
    * A list of entity types which be converted into a fixity_check entity.
    *

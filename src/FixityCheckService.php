@@ -18,6 +18,7 @@ use Drupal\filehash\FileHash;
 use Drupal\media\MediaInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
+use Psr\Log\LoggerInterface;
 
 /**
  * Decorates the FileHash services adding additional functionality.
@@ -62,13 +63,6 @@ class FixityCheckService implements FixityCheckServiceInterface {
   protected $filehash;
 
   /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected LoggerChannelFactoryInterface $loggerFactory;
-
-  /**
    * Constructor.
    */
   public function __construct(
@@ -76,46 +70,22 @@ class FixityCheckService implements FixityCheckServiceInterface {
     ConfigFactoryInterface $config,
     EntityTypeManagerInterface $entity_type_manager,
     TimeInterface $time,
-    FileHash $filehash
+    FileHash $filehash,
+    LoggerInterface $logger,
   ) {
     $this->stringTranslation = $string_translation;
     $this->config = $config;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
     $this->filehash = $filehash;
-  }
-
-  /**
-   * Sets the logger factory.
-   *
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
-   *   The logger factory.
-   */
-  public function setLoggerFactory(LoggerChannelFactoryInterface $loggerFactory) {
-    $this->loggerFactory = $loggerFactory;
-  }
-
-  /**
-   * Gets the logger channel.
-   *
-   * @return \Psr\Log\LoggerInterface
-   *   The logger channel.
-   */
-  protected function getLogger() {
-    if (!isset($this->logger)) {
-      $this->logger = $this->loggerFactory->get('dgi_fixity');
-    }
-    return $this->logger;
+    $this->logger = $logger;
   }
 
   /**
    * {@inheritdoc}
    */
   public function fromEntityTypes(): array {
-    return [
-      'media',
-      'file',
-    ];
+    return static::ENTITY_TYPES;
   }
 
   /**
@@ -298,10 +268,10 @@ class FixityCheckService implements FixityCheckServiceInterface {
       )->toString(),
     ];
     if ($check->passed()) {
-      $this->getLogger()->info($message, $args);
+      $this->logger->info($message, $args);
     }
     else {
-      $this->getLogger()->error($message, $args);
+      $this->logger->error($message, $args);
     }
 
     return $check;
