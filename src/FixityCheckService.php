@@ -70,15 +70,15 @@ class FixityCheckService implements FixityCheckServiceInterface {
     ConfigFactoryInterface $config,
     EntityTypeManagerInterface $entity_type_manager,
     TimeInterface $time,
-    FileHash $filehash,
     LoggerInterface $logger,
+    FileHash $filehash,
   ) {
     $this->stringTranslation = $string_translation;
     $this->config = $config;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
-    $this->filehash = $filehash;
     $this->logger = $logger;
+    $this->filehash = $filehash;
   }
 
   /**
