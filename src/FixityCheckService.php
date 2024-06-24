@@ -7,7 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Link;
-use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\dgi_fixity\Entity\FixityCheck;
@@ -18,7 +18,6 @@ use Drupal\filehash\FileHash;
 use Drupal\media\MediaInterface;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
-use Psr\Log\LoggerInterface;
 
 /**
  * Decorates the FileHash services adding additional functionality.
@@ -49,16 +48,9 @@ class FixityCheckService implements FixityCheckServiceInterface {
   protected $time;
 
   /**
-   * The mail manager service.
-   *
-   * @var \Drupal\Core\Mail\MailManagerInterface
-   */
-  protected $mailManager;
-
-  /**
    * The logger for this service.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
@@ -70,16 +62,50 @@ class FixityCheckService implements FixityCheckServiceInterface {
   protected $filehash;
 
   /**
+   * The logger factory.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected LoggerChannelFactoryInterface $loggerFactory;
+
+  /**
    * Constructor.
    */
-  public function __construct(TranslationInterface $string_translation, ConfigFactoryInterface $config, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time, MailManagerInterface $mail_manager, LoggerInterface $logger, FileHash $filehash) {
+  public function __construct(
+    TranslationInterface $string_translation,
+    ConfigFactoryInterface $config,
+    EntityTypeManagerInterface $entity_type_manager,
+    TimeInterface $time,
+    FileHash $filehash
+  ) {
     $this->stringTranslation = $string_translation;
     $this->config = $config;
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
-    $this->mailManager = $mail_manager;
-    $this->logger = $logger;
     $this->filehash = $filehash;
+  }
+
+  /**
+   * Sets the logger factory.
+   *
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
+   *   The logger factory.
+   */
+  public function setLoggerFactory(LoggerChannelFactoryInterface $loggerFactory) {
+    $this->loggerFactory = $loggerFactory;
+  }
+
+  /**
+   * Gets the logger channel.
+   *
+   * @return \Psr\Log\LoggerInterface
+   *   The logger channel.
+   */
+  protected function getLogger() {
+    if (!isset($this->logger)) {
+      $this->logger = $this->loggerFactory->get('dgi_fixity');
+    }
+    return $this->logger;
   }
 
   /**
@@ -272,10 +298,10 @@ class FixityCheckService implements FixityCheckServiceInterface {
       )->toString(),
     ];
     if ($check->passed()) {
-      $this->logger->info($message, $args);
+      $this->getLogger()->info($message, $args);
     }
     else {
-      $this->logger->error($message, $args);
+      $this->getLogger()->error($message, $args);
     }
 
     return $check;

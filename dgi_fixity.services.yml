@@ -1,11 +1,9 @@
 services:
-  logger.channel.dgi_fixity:
-    class: Drupal\Core\Logger\LoggerChannel
-    factory: logger.factory:get
-    arguments: ['dgi_fixity']
   dgi_fixity.fixity_check:
     class: Drupal\dgi_fixity\FixityCheckService
-    arguments: ['@string_translation', '@config.factory', '@entity_type.manager', '@datetime.time', '@plugin.manager.mail', '@logger.channel.dgi_fixity', '@filehash']
+    arguments: ['@string_translation', '@config.factory', '@entity_type.manager', '@datetime.time', '@filehash']
+    calls:
+      - [setLoggerFactory, ['@logger.factory']]
   dgi_fixity.route_subscriber:
     class: Drupal\dgi_fixity\Routing\FixityCheckRouteSubscriber
     arguments: ['@entity_type.manager', '@dgi_fixity.fixity_check']
@@ -16,3 +14,7 @@ services:
     arguments: ['@entity_type.manager', '@entity.repository', '@dgi_fixity.fixity_check']
     tags:
       - { name: paramconverter }
+  logger.channel.dgi_fixity:
+    class: Drupal\Core\Logger\LoggerChannel
+    factory: logger.factory:get
+    arguments: ['dgi_fixity']
