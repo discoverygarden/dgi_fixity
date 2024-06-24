@@ -17,6 +17,7 @@ use Drupal\Core\Mail\MailFormatHelper;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\dgi_fixity\FixityCheckServiceInterface;
 use Drupal\dgi_fixity\Form\SettingsForm;
 use Drupal\file\Plugin\Field\FieldWidget\FileWidget;
 use Drupal\user\Entity\User;
@@ -145,15 +146,16 @@ function dgi_fixity_cron() {
  * Implements hook_entity_type_alter().
  */
 function dgi_fixity_entity_type_alter(array &$entity_types) {
-  /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
-  $fixity = \Drupal::service('dgi_fixity.fixity_check');
-  $supported_entity_types = $fixity->fromEntityTypes();
-  foreach ($supported_entity_types as $entity_type_id) {
+  // XXX: Cannot reference dgi_fixity.fixity_check:fromEntityTypes() due to
+  // circular dependencies, as dgi_fixity.fixity_check makes use of the
+  // entity_type.manager that we are in the middle of trying to build.
+  foreach (FixityCheckServiceInterface::ENTITY_TYPES as $entity_type_id) {
     $entity_type = &$entity_types[$entity_type_id];
     $entity_type->setLinkTemplate('fixity-audit', "/fixity/$entity_type_id/{{$entity_type_id}}");
     $entity_type->setLinkTemplate('fixity-check', "/fixity/$entity_type_id/{{$entity_type_id}}/check");
     $entity_type->setFormClass('fixity-check', 'Drupal\dgi_fixity\Form\CheckForm');
   }
+  unset($entity_type);
 }
 
 /**
