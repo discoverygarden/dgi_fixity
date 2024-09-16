@@ -6,6 +6,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\dgi_fixity\FixityCheckInterface;
 use Drupal\dgi_fixity\FixityCheckServiceInterface;
+use Drupal\file\FileInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -61,7 +62,12 @@ class FixityCheckWorker extends QueueWorkerBase implements ContainerFactoryPlugi
   public function processItem($data) {
     if ($data instanceof FixityCheckInterface) {
       /** @var \Drupal\dgi_fixity\FixityCheckInterface $data */
-      $this->fixity->check($data->getFile());
+      if ($data->getFile() instanceof FileInterface) {
+        $this->fixity->check($data->getFile());
+      }
+      else {
+        $data->setState(FixityCheckInterface::STATE_MISSING);
+      }
     }
   }
 
