@@ -218,7 +218,7 @@ class FixityCheckService implements FixityCheckServiceInterface {
     // Assume success until proven untrue.
     $state = FixityCheck::STATE_MATCHES;
     // If column is set, only generate that hash.
-    foreach ($this->filehash->algos() as $column => $algo) {
+    foreach ($this->filehash->getEnabledAlgorithms() as $column => $algo) {
       // Nothing to do if the previous checksum value is not known.
       if (!isset($file->{$column})) {
         $state = FixityCheck::STATE_NO_CHECKSUM;
