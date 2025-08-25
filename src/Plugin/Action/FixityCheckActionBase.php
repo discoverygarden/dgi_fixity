@@ -73,7 +73,7 @@ abstract class FixityCheckActionBase extends EntityActionBase {
   /**
    * {@inheritdoc}
    */
-  public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
+  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
     // If it exists and the user has permission to administer fixity checks.
     $result = $this->getCheck($object) && $account->hasPermission('administer fixity checks') ?
       AccessResult::allowed() :
