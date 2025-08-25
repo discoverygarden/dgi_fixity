@@ -98,6 +98,10 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
       /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
       $fixity = \Drupal::service('dgi_fixity.fixity_check');
       $view = $fixity->source($data, 1000);
+      if (!$view) {
+        // Failed to load view? Abort.
+        return;
+      }
       $view->execute();
       // Only processes those which have not already enabled periodic checks.
       foreach ($view->result as $row) {
