@@ -88,7 +88,11 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
     $user_storage = $this->entityTypeManager->getStorage('user');
     $account = $user_storage->load(1);
 
-    if ($account instanceof AccountInterface) {
+    if (!($account instanceof AccountInterface)) {
+      return;
+    }
+
+    try {
       $this->accountSwitcher->switchTo($account);
 
       /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
@@ -107,7 +111,8 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
         $this->accountSwitcher->switchBack();
         throw new RequeueException();
       }
-
+    }
+    finally {
       $this->accountSwitcher->switchBack();
     }
   }
