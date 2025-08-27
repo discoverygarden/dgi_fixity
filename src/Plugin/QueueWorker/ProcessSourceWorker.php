@@ -112,7 +112,6 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
       }
       // Not finished processing.
       if (count($view->result) !== 0) {
-        $this->accountSwitcher->switchBack();
         throw new RequeueException();
       }
     }
