@@ -24,7 +24,7 @@ class FixityCheckBatchCheck {
    *   The number of of files to process at a time.
    *   If not specified it will default to the modules configuration.
    */
-  public static function build(array $fids = NULL, bool $force = FALSE, int $batch_size = NULL) {
+  public static function build(?array $fids = NULL, bool $force = FALSE, ?int $batch_size = NULL) {
     $batch_size = is_null($batch_size) ? \Drupal::config(SettingsForm::CONFIG_NAME)->get(SettingsForm::BATCH_SIZE) : $batch_size;
     return is_null($fids) ?
       static::buildPeriodic($force, $batch_size) :

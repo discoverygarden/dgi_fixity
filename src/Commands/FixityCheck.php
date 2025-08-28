@@ -78,10 +78,12 @@ class FixityCheck extends DrushCommands {
    *
    * @command dgi_fixity:check
    */
-  public function check(array $options = [
-    'fids' => NULL,
-    'force' => FALSE,
-  ]) {
+  public function check(
+    array $options = [
+      'fids' => NULL,
+      'force' => FALSE,
+    ],
+  ) {
     $fids = $options['fids'];
     if (!is_null($fids)) {
       // If a file path is provided, parse it.

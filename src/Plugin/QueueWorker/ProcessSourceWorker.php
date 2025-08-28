@@ -88,12 +88,20 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
     $user_storage = $this->entityTypeManager->getStorage('user');
     $account = $user_storage->load(1);
 
-    if ($account instanceof AccountInterface) {
+    if (!($account instanceof AccountInterface)) {
+      return;
+    }
+
+    try {
       $this->accountSwitcher->switchTo($account);
 
       /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
       $fixity = \Drupal::service('dgi_fixity.fixity_check');
       $view = $fixity->source($data, 1000);
+      if (!$view) {
+        // Failed to load view? Abort.
+        return;
+      }
       $view->execute();
       // Only processes those which have not already enabled periodic checks.
       foreach ($view->result as $row) {
@@ -104,10 +112,10 @@ class ProcessSourceWorker extends QueueWorkerBase implements ContainerFactoryPlu
       }
       // Not finished processing.
       if (count($view->result) !== 0) {
-        $this->accountSwitcher->switchBack();
         throw new RequeueException();
       }
-
+    }
+    finally {
       $this->accountSwitcher->switchBack();
     }
   }

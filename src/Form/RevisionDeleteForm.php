@@ -98,7 +98,7 @@ class RevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, FixityCheckInterface $fixity_check_revision = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?FixityCheckInterface $fixity_check_revision = NULL) {
     $this->revision = $fixity_check_revision;
     $form = parent::buildForm($form, $form_state);
 

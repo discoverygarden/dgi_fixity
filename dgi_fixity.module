@@ -118,6 +118,11 @@ function dgi_fixity_cron() {
 
   // Update enabled periodic checks.
   $queue = \Drupal::queue('dgi_fixity.process_source');
+
+  // Reset queue.
+  $queue->deleteQueue();
+  $queue->createQueue();
+
   foreach ($sources as $source) {
     // It safe to have queue processing a source multiple times,
     // they will steal work from each other but will not conflict.
