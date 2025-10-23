@@ -2,7 +2,7 @@ name: 'Fixity'
 description: "Performs fixity checks on files."
 type: module
 package: DGI
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^10 || ^11
 configure: dgi_fixity.settings
 dependencies:
   - drupal:file
