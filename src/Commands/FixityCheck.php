@@ -24,6 +24,13 @@ class FixityCheck extends DrushCommands {
    */
   protected $entityTypeManager;
 
+   /**
+   * The fixity logger.
+   *
+   * `@var` \Psr\Log\LoggerInterface
+   */
+  protected $fixityLogger;
+
   /**
    * Creates the drush command object.
    *
@@ -34,10 +41,12 @@ class FixityCheck extends DrushCommands {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager.
    */
-  public function __construct(TranslationInterface $string_translation, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(TranslationInterface $string_translation, LoggerInterface $fixityLogger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct();
     $this->stringTranslation = $string_translation;
-    $this->logger = $logger;
+
+    // this logger logs to the "fixity" channel (unlike $this->logger which drush sets up).
+    $this->fixityLogger = $fixityLogger;
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -92,7 +101,7 @@ class FixityCheck extends DrushCommands {
           $fids = explode("\n", trim(file_get_contents($fids)));
         }
         else {
-          $this->logger->error($this->t('Cannot read file @file', ['@file' => $fids]));
+          $this->fixityLogger->error($this->t('Cannot read file @file', ['@file' => $fids]));
           return;
         }
       }
