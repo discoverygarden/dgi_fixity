@@ -83,6 +83,9 @@ interface FixityCheckServiceInterface {
    * The source must comply with checks performed by this modules settings form.
    * This function does not validate it.
    *
+   * This should only be used for administrative purposes. As such the returned
+   * view should suppress access controls.
+   *
    * @param string $source
    *   The view display identifier as selected in this modules settings form.
    * @param int $limit
