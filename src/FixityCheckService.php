@@ -3,6 +3,7 @@
 namespace Drupal\dgi_fixity;
 
 use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Component\Utility\Tags;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -26,6 +27,8 @@ use Psr\Log\LoggerInterface;
 class FixityCheckService implements FixityCheckServiceInterface {
 
   use StringTranslationTrait;
+
+  private const ACCESS_CONTROL_SUPPRESSED_TAG = 'dgi_fixity_access_control_suppressed';
 
   /**
    * Config factory.
@@ -188,19 +191,39 @@ class FixityCheckService implements FixityCheckServiceInterface {
     'periodic'
     );
 
+    $this->checkAccess($source, $view);
+
+    return $view;
+  }
+
+  /**
+   * Helper; by-pass access control if necessary.
+   */
+  private function checkAccess(string $source, ViewExecutable $view) : void {
+    $tags = Tags::explode($view->storage->get('tags') ?? '');
+    if (in_array(static::ACCESS_CONTROL_SUPPRESSED_TAG, $tags, TRUE)) {
+      return;
+    }
+
     // XXX: Given we intend to programmatically invoke this view for
     // administrative purposes, let us suppress SQL rewriting.
     $query_plugin = $view->getQuery();
     if ($query_plugin instanceof Sql) {
-      $query_plugin->options['disable_sql_rewrite'] = TRUE;
+      if (empty($query_plugin->options['disable_sql_rewrite'])) {
+        $query_plugin->options['disable_sql_rewrite'] = TRUE;
+        $this->logger->debug('Programmatically bypassing SQL rewriting in {view}. If suppressing access control is not necessary, apply the tag {tag} to the view.', [
+          'view' => $source,
+          'tag' => static::ACCESS_CONTROL_SUPPRESSED_TAG,
+        ]);
+      }
     }
     else {
-      $this->logger->debug('Unrecognized query plugin of class {class}; unknown how to suppress access control for programmatic execution.', [
+      $this->logger->debug('View {view} has unrecognized query plugin of class {class}; unknown how to suppress access control for programmatic execution. If suppressing access control is not necessary, apply the tag {tag} to the view.', [
+        'view' => $source,
         'class' => get_class($query_plugin),
+        'tag' => static::ACCESS_CONTROL_SUPPRESSED_TAG,
       ]);
     }
-
-    return $view;
   }
 
   /**
