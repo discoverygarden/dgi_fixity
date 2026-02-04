@@ -15,6 +15,7 @@ use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\filehash\FileHash;
 use Drupal\media\MediaInterface;
+use Drupal\views\Plugin\views\query\Sql;
 use Drupal\views\ViewExecutable;
 use Drupal\views\Views;
 use Psr\Log\LoggerInterface;
@@ -169,21 +170,36 @@ class FixityCheckService implements FixityCheckServiceInterface {
     // Only process those which have not already enabled periodic checks.
     [$view_id, $display_id] = explode(':', $source);
     $view = Views::getView($view_id);
-    if ($view) {
-      $view->setDisplay($display_id);
-      $view->getDisplay()->setOption('entity_reference_options', ['limit' => $limit]);
-      $view->addHandler($display_id, 'relationship', 'file_managed', 'reverse_file_fixity_check');
-      $view->addHandler(
-        $display_id, 'filter', 'fixity_check', 'periodic',
-        ['relationship' => 'reverse_file_fixity_check', 'value' => 0],
-        'periodic'
-      );
-      $view->addHandler(
-        $display_id, 'field', 'fixity_check', 'periodic',
-        ['relationship' => 'reverse_file_fixity_check'],
-      'periodic'
-      );
+    if (!$view) {
+      return NULL;
     }
+
+    $view->setDisplay($display_id);
+    $view->getDisplay()->setOption('entity_reference_options', ['limit' => $limit]);
+    $view->addHandler($display_id, 'relationship', 'file_managed', 'reverse_file_fixity_check');
+    $view->addHandler(
+      $display_id, 'filter', 'fixity_check', 'periodic',
+      ['relationship' => 'reverse_file_fixity_check', 'value' => 0],
+      'periodic'
+    );
+    $view->addHandler(
+      $display_id, 'field', 'fixity_check', 'periodic',
+      ['relationship' => 'reverse_file_fixity_check'],
+    'periodic'
+    );
+
+    // XXX: Given we intend to programmatically invoke this view for
+    // administrative purposes, let us suppress SQL rewriting.
+    $query_plugin = $view->getQuery();
+    if ($query_plugin instanceof Sql) {
+      $query_plugin->options['disable_sql_rewrite'] = TRUE;
+    }
+    else {
+      $this->logger->debug('Unrecognized query plugin of class {class}; unknown how to suppress access control for programmatic execution.', [
+        'class' => get_class($query_plugin),
+      ]);
+    }
+
     return $view;
   }
 
