@@ -28,7 +28,15 @@ class FixityCheckService implements FixityCheckServiceInterface {
 
   use StringTranslationTrait;
 
-  private const ACCESS_CONTROL_SUPPRESSED_TAG = 'dgi_fixity_access_control_suppressed';
+  /**
+   * View tag indicating access control should not be an issue.
+   *
+   * Which is to say, views with the given tag should be good to use as they
+   * are.
+   *
+   * @var string
+   */
+  private const string ACCESS_CONTROL_SUPPRESSED_TAG = 'dgi_fixity_access_control_suppressed';
 
   /**
    * Config factory.
