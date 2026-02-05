@@ -238,7 +238,7 @@ class FixityCheckService implements FixityCheckServiceInterface {
    * {@inheritdoc}
    */
   public function check(File $file, bool $force = FALSE) {
-    /** @var \Drupal\dgi_fixity\Entity\FixityCheckInterface[] $existing_checks */
+    /** @var \Drupal\dgi_fixity\FixityCheckInterface[] $existing_checks */
     $existing_checks = $this->entityTypeManager->getStorage('fixity_check')->loadByProperties(['file' => $file->id()]);
     if (empty($existing_checks)) {
       $check = FixityCheck::create()->setFile($file);
