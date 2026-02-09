@@ -3,6 +3,7 @@
 namespace Drupal\dgi_fixity;
 
 use Drupal\Core\Batch\BatchBuilder;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\PluralTranslatableMarkup;
 use Drupal\dgi_fixity\Form\SettingsForm;
 
@@ -19,13 +20,13 @@ class FixityCheckBatchCheck {
    *   enabled will be selected.
    * @param bool $force
    *   A flag to indicate if the check should be performed even if the time
-   *   elapsed since the last check has not exceed the required threshold.
-   * @param int $batch_size
-   *   The number of of files to process at a time.
-   *   If not specified it will default to the modules configuration.
+   *   elapsed since the last check has not exceeded the required threshold.
+   * @param int|null $batch_size
+   *   The number of files to process at a time.
+   *   If not specified it will default to the module's configuration.
    */
   public static function build(?array $fids = NULL, bool $force = FALSE, ?int $batch_size = NULL) {
-    $batch_size = is_null($batch_size) ? \Drupal::config(SettingsForm::CONFIG_NAME)->get(SettingsForm::BATCH_SIZE) : $batch_size;
+    $batch_size = (int) (is_null($batch_size) ? \Drupal::config(SettingsForm::CONFIG_NAME)->get(SettingsForm::BATCH_SIZE) : $batch_size);
     return is_null($fids) ?
       static::buildPeriodic($force, $batch_size) :
       static::buildFixed($fids, $force, $batch_size);
@@ -125,30 +126,54 @@ class FixityCheckBatchCheck {
       $results['errors'] = [];
     }
 
-    /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
-    $fixity = \Drupal::service('dgi_fixity.fixity_check');
-    $view = $fixity->source($source, $batch_size);
-    $view->execute();
-    // Only processes those which have not already enabled periodic checks.
-    foreach ($view->result as $row) {
-      try {
-        /** @var \Drupal\dgi_fixity\FixityCheckInterface $check */
-        $check = $view->field['periodic']->getEntity($row);
-        $check->setPeriodic(TRUE);
-        $check->save();
-      }
-      catch (\Exception $e) {
-        $results['errors'][] = \t('Encountered an exception: @exception', [
-          '@exception' => $e,
-        ]);
-        // In practice exceptions in this case shouldn't arise, but if they do
-        // exit to prevent an infinite loop by exiting the operation.
-        $context['finished'] = 1;
+    $logger = \Drupal::logger('dgi_fixity');
+
+    /** @var \Drupal\user\UserStorageInterface $user_storage */
+    $user_storage = \Drupal::entityTypeManager()->getStorage('user');
+    $admin_user = $user_storage->load(1);
+    if (!($admin_user instanceof AccountInterface)) {
+      $logger->error('Failed to load the admin account to switch.');
+      return;
+    }
+    /** @var \Drupal\Core\Session\AccountSwitcherInterface $account_switcher */
+    $account_switcher = \Drupal::service('account_switcher');
+
+    try {
+      $account_switcher = $account_switcher->switchTo($admin_user);
+
+      /** @var \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity */
+      $fixity = \Drupal::service('dgi_fixity.fixity_check');
+      $view = $fixity->source($source, $batch_size);
+      if (!$view) {
+        $logger->error('Failed to load the view {view}.', ['view' => $source]);
         return;
       }
+
+      $view->execute();
+      // Only processes those which have not already enabled periodic checks.
+      foreach ($view->result as $row) {
+        try {
+          /** @var \Drupal\dgi_fixity\FixityCheckInterface $check */
+          $check = $view->field['periodic']->getEntity($row);
+          $check->setPeriodic(TRUE);
+          $check->save();
+        }
+        catch (\Exception $e) {
+          $results['errors'][] = \t('Encountered an exception: @exception', [
+            '@exception' => $e,
+          ]);
+          // In practice exceptions in this case shouldn't arise, but if they do
+          // exit to prevent an infinite loop by exiting the operation.
+          $context['finished'] = 1;
+          return;
+        }
+      }
+      // End when we have exhausted all inputs.
+      $context['finished'] = count($view->result) == 0;
     }
-    // End when we have exhausted all inputs.
-    $context['finished'] = count($view->result) == 0;
+    finally {
+      $account_switcher->switchBack();
+    }
   }
 
   /**
