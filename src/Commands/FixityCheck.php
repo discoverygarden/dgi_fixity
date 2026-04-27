@@ -24,11 +24,11 @@ class FixityCheck extends DrushCommands {
    */
   protected $entityTypeManager;
 
-   /**
-    * The fixity logger.
-    *
-    * @var \Psr\Log\LoggerInterface
-    */
+  /**
+   * The fixity logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
   protected $fixityLogger;
 
   /**
