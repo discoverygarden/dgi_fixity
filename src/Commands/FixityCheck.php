@@ -36,7 +36,7 @@ class FixityCheck extends DrushCommands {
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $fixityLogger
    *   A logger instance.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager.
