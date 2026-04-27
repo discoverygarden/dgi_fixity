@@ -45,7 +45,8 @@ class FixityCheck extends DrushCommands {
     parent::__construct();
     $this->stringTranslation = $string_translation;
 
-    // this logger logs to the "fixity" channel (unlike $this->logger which drush sets up).
+    // XXX: Not using `$this->logger` to avoid potential oddities with our more-specific
+    // logger being used in other contexts should it be registered with the logger manager.
     $this->fixityLogger = $fixityLogger;
     $this->entityTypeManager = $entity_type_manager;
   }
