@@ -25,19 +25,30 @@ class FixityCheck extends DrushCommands {
   protected $entityTypeManager;
 
   /**
+   * The fixity logger.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected $fixityLogger;
+
+  /**
    * Creates the drush command object.
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $fixityLogger
    *   A logger instance.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager.
    */
-  public function __construct(TranslationInterface $string_translation, LoggerInterface $logger, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(TranslationInterface $string_translation, LoggerInterface $fixityLogger, EntityTypeManagerInterface $entity_type_manager) {
     parent::__construct();
     $this->stringTranslation = $string_translation;
-    $this->logger = $logger;
+
+    // XXX: Not using `$this->logger` to avoid potential oddities with our more-
+    // specific logger being used in other contexts should it be registered with
+    // the logger manager.
+    $this->fixityLogger = $fixityLogger;
     $this->entityTypeManager = $entity_type_manager;
   }
 
@@ -92,7 +103,7 @@ class FixityCheck extends DrushCommands {
           $fids = explode("\n", trim(file_get_contents($fids)));
         }
         else {
-          $this->logger->error($this->t('Cannot read file @file', ['@file' => $fids]));
+          $this->fixityLogger->error($this->t('Cannot read file @file', ['@file' => $fids]));
           return;
         }
       }
