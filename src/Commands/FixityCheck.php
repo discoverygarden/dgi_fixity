@@ -27,7 +27,7 @@ class FixityCheck extends DrushCommands {
    /**
    * The fixity logger.
    *
-   * `@var` \Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $fixityLogger;
 
