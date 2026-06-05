@@ -25,7 +25,7 @@ dgi_fixity.generate:
 entity.fixity_check.revision:
   path: '/fixity/{fixity_check}/revisions/{fixity_check_revision}'
   defaults:
-    _controller: '\Drupal\Core\Entity\Controller\EntityViewController::viewRevision'
+    _controller: '\Drupal\Core\Entity\Controller\EntityRevisionViewController'
     _title_callback: '\Drupal\Core\Entity\Controller\EntityController::title'
   requirements:
     _entity_access: 'fixity_check_revision.view revision'
