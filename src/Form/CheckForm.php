@@ -2,10 +2,7 @@
 
 namespace Drupal\dgi_fixity\Form;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\dgi_fixity\FixityCheckInterface;

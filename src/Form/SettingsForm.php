@@ -3,7 +3,6 @@
 namespace Drupal\dgi_fixity\Form;
 
 use Drupal\Component\Utility\Tags;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
