@@ -3,7 +3,6 @@
 namespace Drupal\dgi_fixity\Form;
 
 use Drupal\Component\Utility\Tags;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -49,30 +48,40 @@ class SettingsForm extends ConfigFormBase {
   protected $state;
 
   /**
-   * Constructs a \Drupal\system\ConfigFormBase object.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The factory for configuration objects.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Manages entity type plugin definitions.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   State manager.
-   */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
-    parent::__construct($config_factory);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->state = $state;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-        $container->get('config.factory'),
-        $container->get('entity_type.manager'),
-        $container->get('state'),
-    );
+    return parent::create($container)
+      ->setEntityTypeManager($container->get('entity_type.manager'))
+      ->setState($container->get('state'));
+  }
+
+  /**
+   * Setter; set the entity type manager service.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
+   *   The entity type manager service to set.
+   *
+   * @return $this
+   *   Fluent API.
+   */
+  public function setEntityTypeManager(EntityTypeManagerInterface $entityTypeManager) : static {
+    $this->entityTypeManager = $entityTypeManager;
+    return $this;
+  }
+
+  /**
+   * Setter; set the state service.
+   *
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service to set.
+   *
+   * @return $this
+   *   Fluent API.
+   */
+  public function setState(StateInterface $state) : static {
+    $this->state = $state;
+    return $this;
   }
 
   /**

@@ -2,10 +2,7 @@
 
 namespace Drupal\dgi_fixity\Form;
 
-use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\ContentEntityConfirmFormBase;
-use Drupal\Core\Entity\EntityRepositoryInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\dgi_fixity\FixityCheckInterface;
@@ -34,32 +31,25 @@ class CheckForm extends ContentEntityConfirmFormBase {
   protected $sourceEntity;
 
   /**
-   * Constructs the form.
-   *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
-   *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
-   *   The entity type bundle service.
-   * @param \Drupal\Component\Datetime\TimeInterface $time
-   *   The time service.
-   * @param \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity
-   *   The fixity service.
-   */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time, FixityCheckServiceInterface $fixity) {
-    parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-    $this->fixity = $fixity;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity.repository'),
-      $container->get('entity_type.bundle.info'),
-      $container->get('datetime.time'),
-      $container->get('dgi_fixity.fixity_check')
-    );
+    return parent::create($container)
+      ->setFixity($container->get('dgi_fixity.fixity_check'));
+  }
+
+  /**
+   * Setter; set the fixity service.
+   *
+   * @param \Drupal\dgi_fixity\FixityCheckServiceInterface $fixity
+   *   The fixity service to set.
+   *
+   * @return $this
+   *   Fluent API.
+   */
+  public function setFixity(FixityCheckServiceInterface $fixity) : static {
+    $this->fixity = $fixity;
+    return $this;
   }
 
   /**
