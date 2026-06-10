@@ -57,7 +57,7 @@ class SettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Setter; set the entity type manager service
+   * Setter; set the entity type manager service.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service to set.
