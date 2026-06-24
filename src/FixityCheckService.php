@@ -111,18 +111,15 @@ class FixityCheckService implements FixityCheckServiceInterface {
    */
   public function fromFile($file): ?FixityCheckInterface {
     $fid = $file instanceof FileInterface ? $file->id() : (int) $file;
+
     // It is only possible to have a single fixity_check entity per-file.
+    /** @var \Drupal\dgi_fixity\FixityCheckInterface[] $results */
     $results = $this->entityTypeManager->getStorage('fixity_check')->loadByProperties(['file' => $fid]);
     if (count($results) === 1) {
-      /** @var \Drupal\dgi_fixity\FixityCheckInterface $fixity_check */
-      $fixity_check = reset($results);
+      return reset($results);
     }
-    else {
-      $fixity_check = FixityCheck::create([
-        'file' => $fid,
-      ]);
-    }
-    return $fixity_check;
+
+    return FixityCheck::create(['file' => $fid]);
   }
 
   /**
@@ -191,15 +188,17 @@ class FixityCheckService implements FixityCheckServiceInterface {
    * {@inheritdoc}
    */
   public function check(File $file, bool $force = FALSE) {
-    /** @var \Drupal\dgi_fixity\Entity\FixityCheckInterface[] $existing_checks */
-    $existing_checks = $this->entityTypeManager->getStorage('fixity_check')->loadByProperties(['file' => $file->id()]);
-    if (empty($existing_checks)) {
+    $check = $this->fromFile($file);
+
+    if ($check === NULL) {
+      // Our implementation of ::fromFile() cannot return NULL; however, because
+      // the interface indicates it might, we should allow for it.
       $check = FixityCheck::create()->setFile($file);
     }
-    else {
+
+    if (!$check->isNew()) {
       // Should only ever be at most one due to the UniqueFieldEntityReference
       // constraint on the file field.
-      $check = reset($existing_checks);
       // Do not perform if the threshold for time since the last check has not
       // been exceeded.
       if (!$force) {
@@ -216,40 +215,43 @@ class FixityCheckService implements FixityCheckServiceInterface {
     }
     $uri = $file->getFileUri();
     // Assume success until proven untrue.
-    $state = FixityCheck::STATE_MATCHES;
+    $state = FixityCheckInterface::STATE_MATCHES;
+
+    $algorithms = $this->filehash->getEnabledAlgorithms();
+
+    // Clone and hash, to avoid setting hashes on the original file object.
+    $hashed_file = clone $file;
+    $this->filehash->hash($hashed_file, $algorithms);
+
     // If column is set, only generate that hash.
-    foreach ($this->filehash->getEnabledAlgorithms() as $column => $algo) {
+    foreach ($algorithms as $column => $algo) {
       // Nothing to do if the previous checksum value is not known.
       if (!isset($file->{$column})) {
-        $state = FixityCheck::STATE_NO_CHECKSUM;
+        $state = FixityCheckInterface::STATE_NO_CHECKSUM;
         break;
       }
       // Nothing to do if file URI is empty.
       if (NULL === $uri || '' === $uri || !file_exists($uri)) {
-        $state = FixityCheck::STATE_MISSING;
+        $state = FixityCheckInterface::STATE_MISSING;
         break;
       }
-      // Unreadable files will have NULL hash values.
-      elseif (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
-        $hash = $this->filehash->blake2b($uri, $matches[1] / 8) ?: NULL;
-      }
-      else {
-        $hash = hash_file($algo, $uri) ?: NULL;
-      }
-      if ($hash === NULL) {
-        $state = FixityCheck::STATE_GENERATION_FAILED;
+
+      if ($hashed_file->{$column}?->value === NULL) {
+        $state = FixityCheckInterface::STATE_GENERATION_FAILED;
         break;
       }
-      if ($file->{$column}->value !== $hash) {
-        $state = FixityCheck::STATE_MISMATCHES;
+      if ($file->{$column}->value !== $hashed_file->{$column}->value) {
+        $state = FixityCheckInterface::STATE_MISMATCHES;
         break;
       }
     }
 
-    $check->setState($state);
-    $check->setPerformed($this->time->getRequestTime());
-    $check->setQueued(0);
-    $check->save();
+    $saved = $check
+      ->setState($state)
+      ->setPerformed($this->time->getRequestTime())
+      ->setQueued(0)
+      ->save();
+    assert($saved === SAVED_NEW || $saved === SAVED_UPDATED);
 
     // Log results.
     $message = '@entity-type %label: %state';
